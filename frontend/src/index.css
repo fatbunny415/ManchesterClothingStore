@@ -1,3 +1,59 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap");
+
+  body {
+    @apply bg-manchester-black text-manchester-white font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-manchester-white text-manchester-black px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-manchester-gold hover:text-manchester-white active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply border border-manchester-white text-manchester-white px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-manchester-white hover:text-manchester-black active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-gold {
+    @apply bg-manchester-gold text-manchester-white px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-manchester-goldLight active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-manchester-gold/20;
+  }
+
+  .card-premium {
+    @apply bg-manchester-dark border border-white/5 rounded-2xl overflow-hidden transition-all duration-500 hover:border-manchester-gold/50 hover:shadow-2xl hover:shadow-manchester-gold/5;
+  }
+
+  .input-field {
+    @apply bg-manchester-dark border border-white/10 rounded-xl px-4 py-3 outline-none transition-all duration-300 focus:border-manchester-gold focus:ring-1 focus:ring-manchester-gold/50 placeholder:text-white/30;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-manchester-black;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-manchester-dark border-2 border-manchester-black rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-manchester-gold/50;
+}
