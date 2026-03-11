@@ -10,8 +10,10 @@ module.exports = {
         manchester: {
           black: "#0A0A0A",
           dark: "#1A1A1A",
-          gold: "#D4AF37",
-          goldLight: "#F1D279",
+          gold: "#d8bc66",
+          goldLight: "#e4ce8c",
+          blue: "#0b293f",
+          blueLight: "#124366",
           white: "#FFFFFF",
           gray: "#E5E5E5",
         }

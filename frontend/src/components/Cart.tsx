@@ -137,7 +137,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                 <button 
                   onClick={handleCheckout}
                   disabled={isCheckingOut}
-                  className="btn-gold w-full py-5 font-bold tracking-[0.2em] text-sm flex items-center justify-center group disabled:opacity-50"
+                  className="btn-blue w-full py-5 font-bold tracking-[0.2em] text-sm flex items-center justify-center group disabled:opacity-50"
                 >
                   {isCheckingOut ? (
                     <Loader2 className="w-4 h-4 animate-spin mr-2" />

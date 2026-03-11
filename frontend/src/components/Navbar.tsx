@@ -32,10 +32,10 @@ const Navbar = () => {
 
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link to="/shop" className="text-sm font-medium hover:text-manchester-gold transition-colors tracking-widest uppercase">Tienda</Link>
-              <Link to="/shop" className="text-sm font-medium hover:text-manchester-gold transition-colors tracking-widest uppercase">Hombre</Link>
-              <Link to="/shop" className="text-sm font-medium hover:text-manchester-gold transition-colors tracking-widest uppercase">Mujer</Link>
-              <Link to="/shop" className="text-sm font-medium hover:text-manchester-gold transition-colors tracking-widest uppercase">Accesorios</Link>
+              <Link to="/superior" className="text-sm font-medium hover:text-manchester-gold transition-colors tracking-widest uppercase">Superior</Link>
+              <Link to="/inferior" className="text-sm font-medium hover:text-manchester-gold transition-colors tracking-widest uppercase">Inferior</Link>
+              <Link to="/calzado" className="text-sm font-medium hover:text-manchester-gold transition-colors tracking-widest uppercase">Calzado</Link>
+              <Link to="/accesorios" className="text-sm font-medium hover:text-manchester-gold transition-colors tracking-widest uppercase">Accesorios</Link>
             </div>
 
             {/* Icons */}
@@ -46,7 +46,7 @@ const Navbar = () => {
               >
                 <ShoppingBag className="w-5 h-5 group-hover:text-manchester-gold" />
                 {totalItems > 0 && (
-                  <span className="absolute top-0 right-0 h-4 w-4 bg-manchester-gold text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute top-0 right-0 h-4 w-4 bg-manchester-blue text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                     {totalItems}
                   </span>
                 )}
@@ -77,7 +77,7 @@ const Navbar = () => {
               >
                 <ShoppingBag className="w-6 h-6" />
                 {totalItems > 0 && (
-                  <span className="absolute top-0 right-0 h-4 w-4 bg-manchester-gold text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute top-0 right-0 h-4 w-4 bg-manchester-blue text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                     {totalItems}
                   </span>
                 )}
@@ -93,10 +93,10 @@ const Navbar = () => {
         {isOpen && (
           <div className="md:hidden bg-manchester-dark border-b border-white/5 py-4 animate-fade-in">
             <div className="px-4 space-y-4">
-              <Link to="/shop" className="block text-lg font-medium tracking-widest uppercase" onClick={() => setIsOpen(false)}>Tienda</Link>
-              <Link to="/shop" className="block text-lg font-medium tracking-widest uppercase" onClick={() => setIsOpen(false)}>Hombre</Link>
-              <Link to="/shop" className="block text-lg font-medium tracking-widest uppercase" onClick={() => setIsOpen(false)}>Mujer</Link>
-              <Link to="/shop" className="block text-lg font-medium tracking-widest uppercase" onClick={() => setIsOpen(false)}>Accesorios</Link>
+              <Link to="/superior" className="block text-lg font-medium tracking-widest uppercase" onClick={() => setIsOpen(false)}>Superior</Link>
+              <Link to="/inferior" className="block text-lg font-medium tracking-widest uppercase" onClick={() => setIsOpen(false)}>Inferior</Link>
+              <Link to="/calzado" className="block text-lg font-medium tracking-widest uppercase" onClick={() => setIsOpen(false)}>Calzado</Link>
+              <Link to="/accesorios" className="block text-lg font-medium tracking-widest uppercase" onClick={() => setIsOpen(false)}>Accesorios</Link>
               <hr className="border-white/5" />
               {isAuthenticated ? (
                 <button onClick={() => { handleLogout(); setIsOpen(false); }} className="text-red-500 font-bold uppercase tracking-widest text-sm">Cerrar Sesión</button>

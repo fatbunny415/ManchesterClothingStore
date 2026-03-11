@@ -137,7 +137,10 @@ const ProductDetail = () => {
                   ? 'bg-green-500 text-white' 
                   : (product.stock <= 0 || !product.isActive)
                     ? 'bg-white/5 text-white/20 cursor-not-allowed'
-                    : 'bg-manchester-white text-manchester-black hover:bg-manchester-gold hover:text-manchester-white shadow-xl shadow-manchester-gold/10'
+                //   ? 'bg-white/5 text-white/20 cursor-not-allowed'
+                //   : 'bg-manchester-white text-manchester-black hover:bg-manchester-blue hover:text-manchester-white shadow-xl shadow-manchester-blue/10'
+                // : 'bg-manchester-white text-manchester-black hover:bg-manchester-blue hover:text-manchester-white shadow-xl shadow-manchester-blue/10'
+                : 'bg-manchester-white text-manchester-black hover:bg-manchester-blue hover:text-manchester-white shadow-xl shadow-manchester-blue/10'
               }`}
             >
               {adding ? (

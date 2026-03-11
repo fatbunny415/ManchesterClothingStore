@@ -69,11 +69,11 @@ const Home = () => {
             transition={{ duration: 0.8, delay: 0.8 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-6"
           >
-            <Link to="/shop" className="btn-gold px-10 py-4 text-sm tracking-widest flex items-center group">
+            <Link to="/shop" className="btn-blue px-10 py-4 text-sm tracking-widest flex items-center group">
               VER TIENDA <ArrowRight className="ml-2 w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link to="/hombre" className="btn-secondary px-10 py-4 text-sm tracking-widest">
-              COLECCIÓN HOMBRE
+            <Link to="/superior" className="btn-secondary px-10 py-4 text-sm tracking-widest">
+              COLECCIÓN SUPERIOR
             </Link>
           </motion.div>
         </div>
@@ -92,9 +92,9 @@ const Home = () => {
       <section className="py-24 bg-manchester-black px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { title: 'HOMBRE', img: 'https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?q=80&w=2066&auto=format&fit=crop', link: '/hombre' },
-            { title: 'MUJER', img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop', link: '/mujer' },
-            { title: 'ACCESORIOS', img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1999&auto=format&fit=crop', link: '/accesorios' }
+            { title: 'SUPERIOR', img: 'https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?q=80&w=2066&auto=format&fit=crop', link: '/superior' },
+            { title: 'INFERIOR', img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop', link: '/inferior' },
+            { title: 'CALZADO', img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1999&auto=format&fit=crop', link: '/calzado' }
           ].map((cat, i) => (
             <motion.div 
               key={i}
@@ -105,7 +105,7 @@ const Home = () => {
               <div className="absolute inset-0 bg-manchester-black/40 group-hover:bg-manchester-black/20 transition-colors"></div>
               <div className="absolute bottom-10 left-10 z-20">
                 <h3 className="text-3xl font-bold tracking-tighter mb-4">{cat.title}</h3>
-                <Link to={cat.link} className="flex items-center text-manchester-gold text-xs font-bold tracking-[0.2em] group-hover:gap-4 transition-all">
+                <Link to={cat.link} className="flex items-center text-manchester-blue text-xs font-bold tracking-[0.2em] group-hover:gap-4 transition-all">
                   COMPRAR AHORA <ArrowRight className="ml-2 w-4 h-4" />
                 </Link>
               </div>
