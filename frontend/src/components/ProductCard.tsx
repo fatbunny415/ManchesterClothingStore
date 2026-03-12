@@ -15,20 +15,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <img
           src={product.imageUrl || 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1000&auto=format&fit=crop'}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:blur-[2px]"
+          className="w-full h-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-110"
         />
         
         {/* Overlay Actions */}
-        <div className="absolute inset-0 bg-manchester-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-3">
-          <button className="p-3 bg-manchester-white text-manchester-black rounded-full hover:bg-manchester-gold hover:text-manchester-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-500">
-            <ShoppingCart className="w-5 h-5" />
-          </button>
-          <Link 
-            to={`/product/${product.id}`}
-            className="p-3 bg-manchester-white text-manchester-black rounded-full hover:bg-manchester-gold hover:text-manchester-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-500 delay-75"
-          >
-            <Eye className="w-5 h-5" />
-          </Link>
+        <div className="absolute inset-0 bg-gradient-to-t from-manchester-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-end pb-8 space-y-3">
+          <div className="flex space-x-3 transform translate-y-8 group-hover:translate-y-0 transition-all duration-500 ease-out">
+            <button className="p-3 bg-manchester-white text-manchester-black rounded-full hover:bg-manchester-gold hover:text-manchester-black transition-colors shadow-lg shadow-black/20">
+              <ShoppingCart className="w-5 h-5" />
+            </button>
+            <Link 
+              to={`/product/${product.id}`}
+              className="p-3 bg-manchester-white text-manchester-black rounded-full hover:bg-manchester-gold hover:text-manchester-black transition-colors shadow-lg shadow-black/20"
+            >
+              <Eye className="w-5 h-5" />
+            </Link>
+          </div>
         </div>
 
         {/* Badge */}

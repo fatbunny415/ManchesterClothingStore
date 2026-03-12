@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Filter, X, ChevronDown, SlidersHorizontal, Loader2 } from 'lucide-react';
+import { Search, X, SlidersHorizontal, Loader2, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { productService } from '../api/services';
 import { Product } from '../types';
 import ProductCard from '../components/ProductCard';
@@ -10,67 +10,94 @@ const Shop = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [showFilters, setShowFilters] = useState(false);
-  const location = useLocation();
-
-  // Route determining logic (e.g., from "/superior" gets "superior")
-  const currentPath = location.pathname.split('/')[1] || 'shop'; // 'shop' will be the fallback for all
   
+  // Mobile drawer state
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+
+  // Filter states
+  const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
+  const [selectedSize, setSelectedSize] = useState<string>('');
+  const [selectedColor, setSelectedColor] = useState<string>('');
+  const [selectedType, setSelectedType] = useState<string>('');
+  
+  // Collapsible sections state
+  const [openSections, setOpenSections] = useState({
+    categoria: true,
+    talla: true,
+    precio: true,
+    color: true,
+    tipo: true
+  });
+
+  const location = useLocation();
+  const currentPath = location.pathname.split('/')[1] || 'shop';
+
   const sectionData: Record<string, string[]> = {
     superior: ['Camisetas', 'Chaquetas', 'Buzos', 'Camisas', 'Polos'],
     inferior: ['Pantalones', 'Jeans', 'Shorts', 'Sudaderas', 'Deportiva'],
-    calzado: ['Calzado', 'Zapatos', 'Tenis', 'Botas'],
-    accesorios: ['Accesorios', 'Relojes', 'Gafas', 'Cinturones', 'Gorras', 'Bufandas']
+    calzado: ['Zapatos', 'Tenis', 'Botas', 'Mocasines'],
+    accesorios: ['Relojes', 'Gafas', 'Cinturones', 'Gorras', 'Bufandas']
   };
 
   const isMainCategory = sectionData[currentPath] !== undefined;
 
-  // Determine dynamic category pills to show
-  const categoriesToDisplay = isMainCategory 
-    ? ['Todos', ...sectionData[currentPath]] 
-    : ['Todos', 'Superior', 'Inferior', 'Calzado', 'Accesorios'];
+  // Filter options
+  const categories = ['Todos', 'Superior', 'Inferior', 'Calzado', 'Accesorios'];
+  const sizes = ['XS', 'S', 'M', 'L', 'XL'];
+  const colors = [
+    { name: 'Negro', class: 'bg-manchester-black border-white/20' },
+    { name: 'Blanco', class: 'bg-manchester-white border-white/20' },
+    { name: 'Gris', class: 'bg-gray-500 border-transparent' },
+    { name: 'Azul', class: 'bg-manchester-blue border-transparent' },
+    { name: 'Beige', class: 'bg-[#D4C3A3] border-transparent' },
+    { name: 'Dorado', class: 'bg-manchester-gold border-transparent' }
+  ];
+  
+  // Dynamic garments based on current view
+  const garmentTypes = isMainCategory 
+    ? sectionData[currentPath] 
+    : [...sectionData.superior.slice(0,2), ...sectionData.inferior.slice(0,2)];
 
-  // Reset selected category to "Todos" when navigating between routes
+  // Initialize view category based on route
   useEffect(() => {
-    setSelectedCategory('Todos');
-  }, [currentPath]);
+    if (isMainCategory) {
+      setSelectedCategory(currentPath.charAt(0).toUpperCase() + currentPath.slice(1));
+    } else {
+      setSelectedCategory('Todos');
+    }
+  }, [currentPath, isMainCategory]);
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        // If not a main shop page but a section, we can't let the backend filter for "Superior"
-        // as the backend doesn't know what "Superior" is. Instead we fetch everything matching search
-        // and filter on the frontend.
-        const categoryFilter = (selectedCategory === 'Todos' || isMainCategory) ? undefined : selectedCategory;
+        const categoryFilter = (selectedCategory === 'Todos') ? undefined : selectedCategory;
         const data = await productService.getAll(categoryFilter, searchTerm, true);
         
+        // Advanced frontend filtering simulation
         let filteredData = data;
         
-        // Manual frontend filtering if on a specific sub-route
-        if (isMainCategory) {
-          const allowedSubcategories = sectionData[currentPath].map(c => c.toLowerCase());
-          filteredData = filteredData.filter((p: Product) => 
-            p.category && allowedSubcategories.includes(p.category.toLowerCase())
-          );
-
-          // If a specific subcategory pill is clicked
-          if (selectedCategory && selectedCategory !== 'Todos') {
-             filteredData = filteredData.filter((p: Product) => 
-               p.category && p.category.toLowerCase() === selectedCategory.toLowerCase()
-             );
-          }
-        } else if (!isMainCategory && selectedCategory && selectedCategory !== 'Todos') {
-          // If on main Shop page, simulate filtering based on our macro-groups since standard category might not exist on backend verbatim
-          if (sectionData[selectedCategory.toLowerCase()]) {
-            const allowedSubcategories = sectionData[selectedCategory.toLowerCase()].map(c => c.toLowerCase());
-              filteredData = filteredData.filter((p: Product) => 
-                p.category && allowedSubcategories.includes(p.category.toLowerCase())
-              );
+        // 1. Filter by Macro Category (if not natively supported by backend)
+        if (selectedCategory && selectedCategory !== 'Todos') {
+          const catKey = selectedCategory.toLowerCase();
+          if (sectionData[catKey]) {
+            const allowedSubcategories = sectionData[catKey].map(c => c.toLowerCase());
+            filteredData = filteredData.filter((p: Product) => 
+               p.category && allowedSubcategories.includes(p.category.toLowerCase())
+            );
           }
         }
 
+        // 2. Filter by Specific Garment Type
+        if (selectedType) {
+          filteredData = filteredData.filter((p: Product) => 
+            p.category && p.category.toLowerCase() === selectedType.toLowerCase()
+          );
+        }
+
+        // 3. Mock logic for Size & Color (assuming backend doesn't filter these yet, just randomize for demo)
+        // In a real app, product would have sizes[] and colors[]
+        
         setProducts(filteredData);
       } catch (error) {
         console.error("Error fetching products", error);
@@ -84,98 +111,344 @@ const Shop = () => {
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [selectedCategory, searchTerm]);
+  }, [selectedCategory, selectedType, searchTerm]);
 
-  return (
-    <div className="pt-32 pb-24 bg-manchester-black min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-5xl md:text-6xl font-bold tracking-tighter mb-4">COLECCIÓN</h1>
-          <p className="text-white/40 text-sm max-w-lg tracking-wide uppercase">Explora nuestra selección curada de piezas exclusivas diseñadas para elevar tu estilo cotidiano.</p>
+  const toggleSection = (section: keyof typeof openSections) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    if (!isMainCategory) setSelectedCategory('Todos');
+    setSelectedSize('');
+    setSelectedColor('');
+    setSelectedType('');
+  };
+
+  const SidebarContent = () => (
+    <div className="space-y-8 pr-4">
+      <div className="flex justify-between items-end border-b border-white/10 pb-4">
+        <h2 className="font-serif text-2xl font-bold text-manchester-white">Filtros</h2>
+        <button 
+          onClick={clearFilters}
+          className="text-xs font-sans text-manchester-gold hover:text-white uppercase tracking-widest font-semibold transition-colors"
+        >
+          Limpiar
+        </button>
+      </div>
+
+      {/* Category Filter */}
+      {!isMainCategory && (
+        <div className="border-b border-white/5 pb-6">
+          <button 
+            onClick={() => toggleSection('categoria')}
+            className="flex justify-between items-center w-full text-left font-serif text-lg font-semibold text-manchester-white mb-4"
+          >
+            Categoría 
+            {openSections.categoria ? <ChevronUp className="w-4 h-4 text-white/50" /> : <ChevronDown className="w-4 h-4 text-white/50" />}
+          </button>
+          <AnimatePresence>
+            {openSections.categoria && (
+              <motion.div 
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden space-y-2"
+              >
+                {categories.map(cat => (
+                  <label key={cat} className="flex items-center space-x-3 cursor-pointer group">
+                    <div className={`w-4 h-4 rounded-sm border flex items-center justify-center transition-all ${
+                      selectedCategory === cat ? 'bg-manchester-gold border-manchester-gold' : 'border-white/20 group-hover:border-manchester-gold/50'
+                    }`}>
+                      {selectedCategory === cat && <Check className="w-3 h-3 text-manchester-black" />}
+                    </div>
+                    <span className={`text-sm font-sans transition-colors ${selectedCategory === cat ? 'text-white' : 'text-white/50 group-hover:text-white/80'}`}>
+                      {cat}
+                    </span>
+                  </label>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
+      )}
 
-        {/* Filters & Search Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12 border-b border-white/5 pb-8">
-          <div className="relative w-full md:w-96 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-manchester-gold transition-colors" />
-            <input
-              type="text"
-              placeholder="Buscar productos..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="input-field w-full pl-12 bg-manchester-dark/50"
-            />
-          </div>
-
-          <div className="flex items-center space-x-4 w-full md:w-auto">
-            <button 
-              onClick={() => setShowFilters(!showFilters)}
-              className="btn-secondary py-3 px-6 flex items-center text-xs tracking-widest"
-            >
-              FILTROS <SlidersHorizontal className="ml-2 w-4 h-4" />
-            </button>
-            <div className="hidden md:flex items-center text-white/40 text-[10px] uppercase tracking-widest font-bold">
-              {products.length} PRODUCTOS ENCONTRADOS
-            </div>
-          </div>
-        </div>
-
-        {/* Expanded Filters */}
+      {/* Tipo de Prenda */}
+      <div className="border-b border-white/5 pb-6">
+        <button 
+          onClick={() => toggleSection('tipo')}
+          className="flex justify-between items-center w-full text-left font-serif text-lg font-semibold text-manchester-white mb-4"
+        >
+          Prenda 
+          {openSections.tipo ? <ChevronUp className="w-4 h-4 text-white/50" /> : <ChevronDown className="w-4 h-4 text-white/50" />}
+        </button>
         <AnimatePresence>
-          {showFilters && (
+          {openSections.tipo && (
             <motion.div 
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden mb-12"
+              className="overflow-hidden space-y-2"
             >
-              <div className="bg-manchester-dark/30 p-8 rounded-3xl border border-white/5">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xs font-bold tracking-[0.3em] text-manchester-gold uppercase">Categorías</h3>
-                  <button onClick={() => { setSelectedCategory(''); setSelectedCategory('Todos'); }} className="text-[10px] text-white/30 hover:text-white transition-colors uppercase tracking-widest font-bold">Limpiar filtros</button>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {categoriesToDisplay.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`px-6 py-2 rounded-full text-[11px] font-bold tracking-widest transition-all ${
-                        (selectedCategory === cat || (cat === 'Todos' && (!selectedCategory || selectedCategory === 'Todos')))
-                          ? 'bg-manchester-gold text-white shadow-lg shadow-manchester-gold/20'
-                          : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white'
-                      }`}
-                    >
-                      {cat.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
+              {garmentTypes.map(type => (
+                <label key={type} className="flex items-center space-x-3 cursor-pointer group">
+                  <div className={`w-4 h-4 rounded-sm border flex items-center justify-center transition-all ${
+                    selectedType === type ? 'bg-manchester-gold border-manchester-gold' : 'border-white/20 group-hover:border-manchester-gold/50'
+                  }`}>
+                    {selectedType === type && <Check className="w-3 h-3 text-manchester-black" />}
+                  </div>
+                  <span className={`text-sm font-sans transition-colors ${selectedType === type ? 'text-white' : 'text-white/50 group-hover:text-white/80'}`}>
+                    {type}
+                  </span>
+                </label>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Talla Filter */}
+      <div className="border-b border-white/5 pb-6">
+        <button 
+          onClick={() => toggleSection('talla')}
+          className="flex justify-between items-center w-full text-left font-serif text-lg font-semibold text-manchester-white mb-4"
+        >
+          Talla 
+          {openSections.talla ? <ChevronUp className="w-4 h-4 text-white/50" /> : <ChevronDown className="w-4 h-4 text-white/50" />}
+        </button>
+        <AnimatePresence>
+          {openSections.talla && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden flex flex-wrap gap-2"
+            >
+              {sizes.map(size => (
+                <button
+                  key={size}
+                  onClick={() => setSelectedSize(selectedSize === size ? '' : size)}
+                  className={`w-10 h-10 flex items-center justify-center text-xs font-sans border transition-all ${
+                    selectedSize === size 
+                    ? 'border-manchester-gold bg-manchester-gold/10 text-manchester-gold font-bold' 
+                    : 'border-white/10 text-white/50 hover:border-white/30 hover:text-white'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Color Filter */}
+      <div className="border-b border-white/5 pb-6">
+        <button 
+          onClick={() => toggleSection('color')}
+          className="flex justify-between items-center w-full text-left font-serif text-lg font-semibold text-manchester-white mb-4"
+        >
+          Color 
+          {openSections.color ? <ChevronUp className="w-4 h-4 text-white/50" /> : <ChevronDown className="w-4 h-4 text-white/50" />}
+        </button>
+        <AnimatePresence>
+          {openSections.color && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden flex flex-wrap gap-3"
+            >
+              {colors.map(color => (
+                <button
+                  key={color.name}
+                  onClick={() => setSelectedColor(selectedColor === color.name ? '' : color.name)}
+                  title={color.name}
+                  className={`relative w-8 h-8 rounded-full border flex items-center justify-center transition-all ${color.class} ${
+                    selectedColor === color.name ? 'ring-2 ring-manchester-gold ring-offset-2 ring-offset-manchester-black' : 'hover:scale-110'
+                  }`}
+                >
+                  {selectedColor === color.name && <Check className="w-4 h-4 mix-blend-difference text-white" />}
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Precio Filter (Mock Slider) */}
+      <div className="pb-6">
+        <button 
+          onClick={() => toggleSection('precio')}
+          className="flex justify-between items-center w-full text-left font-serif text-lg font-semibold text-manchester-white mb-4"
+        >
+          Precio 
+          {openSections.precio ? <ChevronUp className="w-4 h-4 text-white/50" /> : <ChevronDown className="w-4 h-4 text-white/50" />}
+        </button>
+        <AnimatePresence>
+          {openSections.precio && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden space-y-4"
+            >
+              <div className="h-1 w-full bg-white/10 rounded-full relative">
+                <div className="absolute left-[20%] right-[30%] h-full bg-manchester-gold rounded-full"></div>
+                <div className="absolute left-[20%] top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-manchester-white rounded-full cursor-grab"></div>
+                <div className="absolute right-[30%] top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 bg-manchester-white rounded-full cursor-grab"></div>
+              </div>
+              <div className="flex justify-between items-center gap-4">
+                <div className="bg-white/5 border border-white/10 rounded-md px-3 py-2 text-xs font-sans text-white/70 w-full text-center">$ 500</div>
+                <span className="text-white/30">-</span>
+                <div className="bg-white/5 border border-white/10 rounded-md px-3 py-2 text-xs font-sans text-white/70 w-full text-center">$ 5000</div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Product Grid */}
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-40">
-            <Loader2 className="w-10 h-10 text-manchester-gold animate-spin mb-4" />
-            <span className="text-white/20 text-xs tracking-widest font-bold uppercase">Cargando catálogo premium...</span>
-          </div>
-        ) : products.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-40 border border-dashed border-white/10 rounded-3xl">
-            <X className="w-12 h-12 text-white/10 mx-auto mb-4" />
-            <h3 className="text-xl font-bold mb-2">NO SE ENCONTRARON PRODUCTOS</h3>
-            <p className="text-white/40 text-sm">Prueba ajustando tus filtros o términos de búsqueda.</p>
-          </div>
-        )}
       </div>
+
+    </div>
+  );
+
+  return (
+    <div className="pt-28 pb-24 bg-manchester-black min-h-screen">
+      
+      {/* Page Header */}
+      <div className="bg-manchester-dark border-y border-white/5 py-12 mb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-6">
+          <div>
+            <h1 className="text-5xl md:text-6xl font-serif font-bold tracking-tighter mb-4 text-manchester-white">Catálogo</h1>
+            <p className="text-white/40 text-sm max-w-lg font-sans tracking-wide">
+              {isMainCategory ? `Explora nuestra selección exclusiva de la colección ${selectedCategory}.` : 'Descubre piezas atemporales, diseñadas con los materiales más finos del mundo.'}
+            </p>
+          </div>
+
+          <div className="relative w-full md:w-80 group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-manchester-gold transition-colors" />
+            <input
+              type="text"
+              placeholder="Buscar exclusividad..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-full text-sm font-sans text-white focus:outline-none focus:border-manchester-gold/50 transition-colors"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Mobile Filter Toggle */}
+        <div className="md:hidden flex justify-between items-center mb-8 border-b border-white/10 pb-4">
+          <span className="font-sans text-xs tracking-widest text-white/50">{products.length} Resultados</span>
+          <button 
+            onClick={() => setIsMobileFiltersOpen(true)}
+            className="flex items-center gap-2 text-manchester-gold font-sans text-xs uppercase tracking-[0.2em] font-bold"
+          >
+            Filtros <SlidersHorizontal className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+          
+          {/* Desktop Sidebar */}
+          <div className="hidden lg:block lg:col-span-1">
+            <div className="sticky top-28">
+              <SidebarContent />
+            </div>
+          </div>
+
+          {/* Product Grid Area */}
+          <div className="lg:col-span-3">
+            <div className="hidden md:flex justify-between items-center mb-8">
+              <span className="font-sans text-xs tracking-widest text-white/40 uppercase">{products.length} Resultados Encontrados</span>
+              <div className="flex items-center gap-2">
+                <span className="font-sans text-xs tracking-widest text-white/40 uppercase">Ordenar por:</span>
+                <select className="bg-transparent text-sm font-sans text-white border-b border-white/20 focus:outline-none focus:border-manchester-gold pb-1 cursor-pointer">
+                  <option className="bg-manchester-black text-white">Relevancia</option>
+                  <option className="bg-manchester-black text-white">Precio: Menor a Mayor</option>
+                  <option className="bg-manchester-black text-white">Precio: Mayor a Menor</option>
+                  <option className="bg-manchester-black text-white">Lo más nuevo</option>
+                </select>
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-40">
+                <Loader2 className="w-10 h-10 text-manchester-gold animate-spin mb-4" />
+                <span className="text-white/30 font-sans text-xs tracking-widest font-bold uppercase">Actualizando Catálogo...</span>
+              </div>
+            ) : products.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+                {products.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-32 border border-dashed border-white/10 rounded-2xl">
+                <X className="w-12 h-12 text-white/10 mx-auto mb-4" />
+                <h3 className="text-xl font-serif font-bold mb-2 text-white">Sin resultados</h3>
+                <p className="text-white/40 font-sans text-sm">Prueba ajustando los filtros de búsqueda para encontrar lo que necesitas.</p>
+                <button 
+                  onClick={clearFilters}
+                  className="mt-6 text-manchester-gold border-b border-manchester-gold/30 hover:border-manchester-gold pb-1 text-sm font-sans tracking-widest uppercase transition-colors"
+                >
+                  Limpiar todos los filtros
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Filters Drawer */}
+      <AnimatePresence>
+        {isMobileFiltersOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] lg:hidden"
+          >
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm" 
+              onClick={() => setIsMobileFiltersOpen(false)}
+            />
+            
+            {/* Drawer */}
+            <motion.div 
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="absolute top-0 left-0 bottom-0 w-[85%] max-w-[320px] bg-manchester-dark border-r border-white/10 shadow-2xl overflow-y-auto"
+            >
+              <div className="flex justify-between items-center p-6 border-b border-white/10 sticky top-0 bg-manchester-dark/95 backdrop-blur z-10">
+                <h2 className="font-serif text-xl font-bold text-white">Filtros</h2>
+                <button onClick={() => setIsMobileFiltersOpen(false)} className="p-2 -mr-2 text-white/50 hover:text-white">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="p-6">
+                <SidebarContent />
+              </div>
+
+              {/* Sticky bottom CTA */}
+              <div className="sticky bottom-0 bg-manchester-dark p-6 border-t border-white/10">
+                <button 
+                  onClick={() => setIsMobileFiltersOpen(false)}
+                  className="w-full btn-primary py-3 text-xs tracking-widest uppercase font-bold"
+                >
+                  Ver {products.length} resultados
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
