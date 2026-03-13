@@ -1,0 +1,92 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-manchester-black text-manchester-white font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-serif tracking-tight;
+  }
+}
+
+@layer components {
+  /* CTA Principal — dorado premium */
+  .btn-primary {
+    @apply bg-manchester-gold text-manchester-black px-6 py-2 rounded-full font-semibold transition-all duration-300 hover:bg-manchester-goldLight hover:shadow-lg hover:shadow-manchester-gold/30 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed tracking-widest uppercase text-xs;
+  }
+
+  /* Outline blanco — CTA secundario */
+  .btn-secondary {
+    @apply border border-white/40 text-manchester-white px-6 py-2 rounded-full font-medium transition-all duration-300 hover:border-manchester-gold hover:text-manchester-gold active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed tracking-widest uppercase text-xs;
+  }
+
+  /* Gold — alias para compatibilidad */
+  .btn-gold {
+    @apply bg-manchester-gold text-manchester-black px-6 py-2 rounded-full font-semibold transition-all duration-300 hover:bg-manchester-goldLight hover:shadow-lg hover:shadow-manchester-gold/30 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Blue — re-mapeado a gold para romper el azul */
+  .btn-blue {
+    @apply bg-manchester-gold text-manchester-black px-6 py-2 rounded-full font-semibold transition-all duration-300 hover:bg-manchester-goldLight hover:shadow-lg hover:shadow-manchester-gold/30 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .card-premium {
+    @apply bg-manchester-dark border border-white/5 rounded-2xl overflow-hidden transition-all duration-500 hover:border-manchester-gold/50 hover:shadow-2xl hover:shadow-manchester-gold/5;
+  }
+
+  .input-field {
+    @apply bg-manchester-dark border border-white/10 rounded-xl px-4 py-3 outline-none transition-all duration-300 focus:border-manchester-gold focus:ring-1 focus:ring-manchester-gold/50 placeholder:text-white/30;
+  }
+
+  /* Nav link con subrayado dorado al hover */
+  .nav-link {
+    @apply relative text-sm font-medium text-white/70 hover:text-manchester-gold transition-colors tracking-widest uppercase after:absolute after:bottom-[-3px] after:left-0 after:w-0 after:h-[1px] after:bg-manchester-gold hover:after:w-full after:transition-all after:duration-300;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-manchester-black;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-manchester-dark border border-manchester-black rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-manchester-gold/50;
+}
+
+/* Hero parallax zoom lento */
+@keyframes heroZoom {
+  0%   { transform: scale(1.05); }
+  100% { transform: scale(1.12); }
+}
+
+.hero-img {
+  animation: heroZoom 14s ease-in-out infinite alternate;
+}
+
+/* Pulso suave para el punto del logo */
+@keyframes goldPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201,169,106,0.4); }
+  50%       { box-shadow: 0 0 0 6px rgba(201,169,106,0); }
+}
+
+.logo-dot {
+  animation: goldPulse 3s ease-in-out infinite;
+}
