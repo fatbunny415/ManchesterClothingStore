@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ManchesterClothingStore.Infrastructure.Persistence;
-using ManchesterClothingStore.Domain.Entities;
+
 using ManchesterClothingStore.Application.DTOs;
-using System.Globalization;
+using ManchesterClothingStore.Domain.Entities;
+using ManchesterClothingStore.Infrastructure.Persistence;
 
 namespace ManchesterClothingStore.API.Controllers;
 
@@ -47,59 +47,65 @@ public class ProductsController : ControllerBase
 
     // =========================
     // POST: api/products
-    // Protegido
+    // Admin o Vendedor
     // =========================
-    [Authorize]
-[HttpPost]
-public async Task<ActionResult<Product>> Create([FromBody] CreateProductDto dto)
-{
-    var product = new Product
+    [Authorize(Roles = "Admin,Vendedor")]
+    [HttpPost]
+    public async Task<ActionResult<Product>> Create([FromBody] CreateProductDto dto)
     {
-        Name = dto.Name,
-        Description = dto.Description,
-        Price = dto.Price,
-        Stock = dto.Stock,
-        Category = dto.Category,
-        ImageUrl = dto.ImageUrl,
-        IsActive = dto.IsActive,
-        CreatedAt = DateTime.UtcNow
-    };
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-    _context.Products.Add(product);
-    await _context.SaveChangesAsync();
+        var product = new Product
+        {
+            Name = dto.Name,
+            Description = dto.Description,
+            Price = dto.Price,
+            Stock = dto.Stock,
+            Category = dto.Category,
+            ImageUrl = dto.ImageUrl,
+            IsActive = dto.IsActive,
+            CreatedAt = DateTime.UtcNow
+        };
 
-    return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
-}
+        _context.Products.Add(product);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
+    }
 
     // =========================
     // PUT: api/products/{id}
-    // Protegido
+    // Admin o Vendedor
     // =========================
-    [Authorize]
-[HttpPut("{id:guid}")]
-public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProductDto dto)
-{
-    var product = await _context.Products.FindAsync(id);
-    if (product is null)
-        return NotFound("Producto no encontrado.");
+    [Authorize(Roles = "Admin,Vendedor")]
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProductDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-    product.Name = dto.Name;
-    product.Description = dto.Description;
-    product.Price = dto.Price;
-    product.Stock = dto.Stock;
-    product.Category = dto.Category;
-    product.ImageUrl = dto.ImageUrl;
-    product.IsActive = dto.IsActive;
+        var product = await _context.Products.FindAsync(id);
+        if (product is null)
+            return NotFound("Producto no encontrado.");
 
-    await _context.SaveChangesAsync();
-    return NoContent();
-}
+        product.Name = dto.Name;
+        product.Description = dto.Description;
+        product.Price = dto.Price;
+        product.Stock = dto.Stock;
+        product.Category = dto.Category;
+        product.ImageUrl = dto.ImageUrl;
+        product.IsActive = dto.IsActive;
+
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
 
     // =========================
     // DELETE: api/products/{id}
-    // Protegido
+    // Solo Admin
     // =========================
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
@@ -114,30 +120,36 @@ public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProductDto dto
         return NoContent();
     }
 
-    [Authorize]
+    // =========================
+    // POST: api/products/seed
+    // Solo Admin - Carga demo
+    // =========================
+    [Authorize(Roles = "Admin")]
     [HttpPost("seed")]
-public async Task<IActionResult> Seed()
-{
-    if (await _context.Products.AnyAsync())
-        return BadRequest("Ya existen productos en la base de datos.");
-
-    var products = new List<Product>
+    public async Task<IActionResult> Seed()
     {
-        new() { Name="Camiseta Negra", Description="Algodón premium", Price=45000, Stock=20, Category="Camisetas", ImageUrl="https://example.com/camiseta-negra.png", IsActive=true, CreatedAt=DateTime.UtcNow },
-        new() { Name="Camiseta Blanca", Description="Básica unisex", Price=40000, Stock=25, Category="Camisetas", ImageUrl="https://example.com/camiseta-blanca.png", IsActive=true, CreatedAt=DateTime.UtcNow },
-        new() { Name="Jean Slim", Description="Jean azul slim fit", Price=110000, Stock=15, Category="Pantalones", ImageUrl="https://example.com/jean-slim.png", IsActive=true, CreatedAt=DateTime.UtcNow },
-        new() { Name="Chaqueta Denim", Description="Chaqueta clásica", Price=160000, Stock=10, Category="Chaquetas", ImageUrl="https://example.com/chaqueta-denim.png", IsActive=true, CreatedAt=DateTime.UtcNow },
-        new() { Name="Hoodie Gris", Description="Buzo con capota", Price=95000, Stock=18, Category="Buzos", ImageUrl="https://example.com/hoodie-gris.png", IsActive=true, CreatedAt=DateTime.UtcNow },
-        new() { Name="Gorra Negra", Description="Gorra ajustable", Price=35000, Stock=30, Category="Accesorios", ImageUrl="https://example.com/gorra-negra.png", IsActive=true, CreatedAt=DateTime.UtcNow },
-        new() { Name="Tenis Urban", Description="Tenis estilo urbano", Price=180000, Stock=12, Category="Calzado", ImageUrl="https://example.com/tenis-urban.png", IsActive=true, CreatedAt=DateTime.UtcNow },
-        new() { Name="Camisa Formal", Description="Camisa manga larga", Price=120000, Stock=14, Category="Camisas", ImageUrl="https://example.com/camisa-formal.png", IsActive=true, CreatedAt=DateTime.UtcNow },
-        new() { Name="Polo Azul", Description="Polo casual", Price=65000, Stock=22, Category="Polos", ImageUrl="https://example.com/polo-azul.png", IsActive=true, CreatedAt=DateTime.UtcNow },
-        new() { Name="Short Deportivo", Description="Short liviano", Price=55000, Stock=19, Category="Deportiva", ImageUrl="https://example.com/short-deportivo.png", IsActive=true, CreatedAt=DateTime.UtcNow }
-    };
+        if (await _context.Products.AnyAsync())
+            return BadRequest("Ya existen productos en la base de datos.");
 
-    _context.Products.AddRange(products);
-    await _context.SaveChangesAsync();
+        var now = DateTime.UtcNow;
 
-    return Ok(new { message = "Productos de demo creados.", total = products.Count });
-}
+        var products = new List<Product>
+        {
+            new() { Name="Camiseta Negra", Description="Algodón premium", Price=45000, Stock=20, Category="Camisetas", ImageUrl="https://example.com/camiseta-negra.png", IsActive=true, CreatedAt=now },
+            new() { Name="Camiseta Blanca", Description="Básica unisex", Price=40000, Stock=25, Category="Camisetas", ImageUrl="https://example.com/camiseta-blanca.png", IsActive=true, CreatedAt=now },
+            new() { Name="Jean Slim", Description="Jean azul slim fit", Price=110000, Stock=15, Category="Pantalones", ImageUrl="https://example.com/jean-slim.png", IsActive=true, CreatedAt=now },
+            new() { Name="Chaqueta Denim", Description="Chaqueta clásica", Price=160000, Stock=10, Category="Chaquetas", ImageUrl="https://example.com/chaqueta-denim.png", IsActive=true, CreatedAt=now },
+            new() { Name="Hoodie Gris", Description="Buzo con capota", Price=95000, Stock=18, Category="Buzos", ImageUrl="https://example.com/hoodie-gris.png", IsActive=true, CreatedAt=now },
+            new() { Name="Gorra Negra", Description="Gorra ajustable", Price=35000, Stock=30, Category="Accesorios", ImageUrl="https://example.com/gorra-negra.png", IsActive=true, CreatedAt=now },
+            new() { Name="Tenis Urban", Description="Tenis estilo urbano", Price=180000, Stock=12, Category="Calzado", ImageUrl="https://example.com/tenis-urban.png", IsActive=true, CreatedAt=now },
+            new() { Name="Camisa Formal", Description="Camisa manga larga", Price=120000, Stock=14, Category="Camisas", ImageUrl="https://example.com/camisa-formal.png", IsActive=true, CreatedAt=now },
+            new() { Name="Polo Azul", Description="Polo casual", Price=65000, Stock=22, Category="Polos", ImageUrl="https://example.com/polo-azul.png", IsActive=true, CreatedAt=now },
+            new() { Name="Short Deportivo", Description="Short liviano", Price=55000, Stock=19, Category="Deportiva", ImageUrl="https://example.com/short-deportivo.png", IsActive=true, CreatedAt=now }
+        };
+
+        _context.Products.AddRange(products);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Productos de demo creados.", total = products.Count });
+    }
 }
