@@ -13,6 +13,9 @@ public class User
     public UserRole Role { get; set; } = UserRole.Cliente;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    public string? PasswordResetToken { get; set; }
+    public DateTime? PasswordResetTokenExpiresAt { get; set; }
+
     // =========================
     // Relaciones
     // =========================

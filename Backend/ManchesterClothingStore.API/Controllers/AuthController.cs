@@ -71,6 +71,58 @@ public class AuthController : ControllerBase
         });
     }
 
+    [HttpPost("forgot-password")]
+public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
+{
+    var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+
+    if (user == null)
+        return NotFound("No existe un usuario con ese correo.");
+
+    var token = Guid.NewGuid().ToString("N");
+
+    user.PasswordResetToken = token;
+    user.PasswordResetTokenExpiresAt = DateTime.UtcNow.AddMinutes(15);
+
+    await _context.SaveChangesAsync();
+
+    return Ok(new
+    {
+        message = "Token de recuperación generado correctamente.",
+        resetToken = token,
+        expiresAt = user.PasswordResetTokenExpiresAt
+    });
+}
+
+[HttpPost("reset-password")]
+public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+{
+    var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+
+    if (user == null)
+        return NotFound("Usuario no encontrado.");
+
+    if (string.IsNullOrWhiteSpace(user.PasswordResetToken) ||
+        user.PasswordResetToken != dto.Token)
+    {
+        return BadRequest("Token inválido.");
+    }
+
+    if (!user.PasswordResetTokenExpiresAt.HasValue ||
+        user.PasswordResetTokenExpiresAt.Value < DateTime.UtcNow)
+    {
+        return BadRequest("El token ha expirado.");
+    }
+
+    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+    user.PasswordResetToken = null;
+    user.PasswordResetTokenExpiresAt = null;
+
+    await _context.SaveChangesAsync();
+
+    return Ok("Contraseña restablecida correctamente.");
+}
+
     // =========================
     // GENERATE JWT
     // =========================
