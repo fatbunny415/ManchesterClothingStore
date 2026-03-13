@@ -1,0 +1,27 @@
+On branch version-con-Front
+Your branch is up to date with 'origin/version-con-Front'.
+
+All conflicts fixed but you are still merging.
+  (use "git commit" to conclude merge)
+
+Changes to be committed:
+	modified:   Backend/ManchesterClothingStore.API/Controllers/AuthController.cs
+	new file:   Backend/ManchesterClothingStore.API/Controllers/CartController.cs
+	modified:   Backend/ManchesterClothingStore.API/Controllers/OrdersController.cs
+	new file:   Backend/ManchesterClothingStore.API/Controllers/UsersController.cs
+	modified:   Backend/ManchesterClothingStore.API/Program.cs
+	new file:   Backend/ManchesterClothingStore.Application/DTOs/ChangePasswordDto.cs
+	new file:   Backend/ManchesterClothingStore.Application/DTOs/ForgotPasswordDto.cs
+	new file:   Backend/ManchesterClothingStore.Application/DTOs/ResetPasswordDto.cs
+	new file:   Backend/ManchesterClothingStore.Application/DTOs/UpdateOrderStatusDto.cs
+	modified:   Backend/ManchesterClothingStore.Domain/Entities/User.cs
+	new file:   Backend/ManchesterClothingStore.Infrastructure/Migrations/20260309210128_AddPasswordResetFields.Designer.cs
+	new file:   Backend/ManchesterClothingStore.Infrastructure/Migrations/20260309210128_AddPasswordResetFields.cs
+	new file:   ManchesterClothingStore.API/Controllers/ProductsController.cs
+	new file:   ManchesterClothingStore.Infrastructure/Migrations/AppDbContextModelSnapshot.cs
+	new file:   ManchesterClothingStore.Infrastructure/Persistence/AppDbContext.cs
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	git_status_output.txt
+
