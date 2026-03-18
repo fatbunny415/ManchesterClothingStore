@@ -3,12 +3,14 @@ import { ArrowRight, Star, ShieldCheck, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { productService } from '../api/services';
+import { useAuthStore } from '../store/useAuthStore';
 import { Product } from '../types';
 import ProductCard from '../components/ProductCard';
 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -88,22 +90,32 @@ const Home = () => {
             transition={{ duration: 0.9, delay: 0.8 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-5"
           >
-            {/* Botón principal — ahora outline blanco */}
-            <Link
-              to="/shop"
-              className="btn-secondary px-10 py-4 text-xs tracking-[0.2em] flex items-center gap-3 group"
-            >
-              Mi tienda
-              <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                to="/shop"
+                className="btn-primary px-10 py-4 text-xs tracking-[0.2em] flex items-center gap-3 group shadow-lg shadow-manchester-gold/20"
+              >
+                Mi tienda
+                <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform text-manchester-black" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/shop"
+                  className="btn-secondary px-10 py-4 text-xs tracking-[0.2em] flex items-center gap-3 group"
+                >
+                  Mi tienda
+                  <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                </Link>
 
-            {/* Botón secundario — ahora dorado */}
-            <Link
-              to="/register"
-              className="btn-primary px-10 py-4 text-xs tracking-[0.2em] shadow-lg shadow-manchester-gold/20"
-            >
-              Registro
-            </Link>
+                <Link
+                  to="/register"
+                  className="btn-primary px-10 py-4 text-xs tracking-[0.2em] shadow-lg shadow-manchester-gold/20"
+                >
+                  Registro
+                </Link>
+              </>
+            )}
           </motion.div>
         </div>
 
@@ -130,11 +142,10 @@ const Home = () => {
             <h2 className="font-serif text-4xl md:text-5xl font-bold mt-3 text-manchester-white">Colecciones</h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               { title: 'Superior',   img: 'https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?q=80&w=2066&auto=format&fit=crop', link: '/superior' },
               { title: 'Inferior',   img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop', link: '/inferior' },
-              { title: 'Calzado',    img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1999&auto=format&fit=crop', link: '/calzado' },
               { title: 'Accesorios', img: 'https://images.unsplash.com/photo-1611082500052-7e77d9c6e3b0?q=80&w=1974&auto=format&fit=crop', link: '/accesorios' }
             ].map((cat, i) => (
               <motion.div

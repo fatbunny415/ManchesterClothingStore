@@ -35,7 +35,6 @@ const Navbar = () => {
             <div className="hidden md:flex items-center space-x-10">
               <Link to="/superior"   className="nav-link">Superior</Link>
               <Link to="/inferior"   className="nav-link">Inferior</Link>
-              <Link to="/calzado"    className="nav-link">Calzado</Link>
               <Link to="/accesorios" className="nav-link">Accesorios</Link>
             </div>
 
@@ -58,7 +57,7 @@ const Navbar = () => {
                   <Link to="/orders" className="p-2 hover:bg-white/5 rounded-full group transition-colors">
                     <Package className="w-5 h-5 text-white/70 group-hover:text-manchester-gold" />
                   </Link>
-                  <span className="text-xs uppercase font-semibold text-white/40 tracking-widest">{user?.fullName.split(' ')[0]}</span>
+                  <span className="text-xs uppercase font-semibold text-white/40 tracking-widest">{user?.fullName?.split(' ')[0] || 'User'}</span>
                   <button onClick={handleLogout} className="p-2 hover:bg-red-500/10 rounded-full group transition-colors">
                     <LogOut className="w-5 h-5 text-white/50 group-hover:text-red-400" />
                   </button>
@@ -99,7 +98,6 @@ const Navbar = () => {
             <div className="px-6 space-y-5">
               <Link to="/superior"   className="block text-base font-semibold tracking-widest uppercase text-white/70 hover:text-manchester-gold transition-colors" onClick={() => setIsOpen(false)}>Superior</Link>
               <Link to="/inferior"   className="block text-base font-semibold tracking-widest uppercase text-white/70 hover:text-manchester-gold transition-colors" onClick={() => setIsOpen(false)}>Inferior</Link>
-              <Link to="/calzado"    className="block text-base font-semibold tracking-widest uppercase text-white/70 hover:text-manchester-gold transition-colors" onClick={() => setIsOpen(false)}>Calzado</Link>
               <Link to="/accesorios" className="block text-base font-semibold tracking-widest uppercase text-white/70 hover:text-manchester-gold transition-colors" onClick={() => setIsOpen(false)}>Accesorios</Link>
               <hr className="border-white/5" />
               {isAuthenticated ? (
