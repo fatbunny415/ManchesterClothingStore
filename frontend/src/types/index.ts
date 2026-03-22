@@ -23,8 +23,11 @@ export interface Product {
   price: number;
   stock: number;
   category: string;
-  imageUrl?: string;
   isActive: boolean;
+  imageUrl?: string;
+  // Now provided by backend as comma-separated strings
+  sizes?: string;
+  colors?: string;
   createdAt: string;
   updatedAt?: string;
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Search, X, SlidersHorizontal, Loader2, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { productService } from '../api/services';
 import { Product } from '../types';
@@ -19,6 +19,10 @@ const Shop = () => {
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedType, setSelectedType] = useState<string>('');
+  const [minPrice, setMinPrice] = useState<number>(0);
+  const [maxPrice, setMaxPrice] = useState<number>(500000); // alto por defecto para que muestre todo
+  const [sortBy, setSortBy] = useState<string>('Relevancia');
+
   
   // Collapsible sections state
   const [openSections, setOpenSections] = useState({
@@ -94,8 +98,18 @@ const Shop = () => {
           );
         }
 
-        // 3. Mock logic for Size & Color (assuming backend doesn't filter these yet, just randomize for demo)
-        // In a real app, product would have sizes[] and colors[]
+        // 3. Filter by Price Range
+        filteredData = filteredData.filter((p: Product) => 
+          p.price >= minPrice && p.price <= maxPrice
+        );
+
+        // 4. Filter by Size & Color (using our deterministic mock)
+        if (selectedSize) {
+          filteredData = filteredData.filter((p: Product) => p.sizes?.includes(selectedSize));
+        }
+        if (selectedColor) {
+          filteredData = filteredData.filter((p: Product) => p.colors?.includes(selectedColor));
+        }
         
         setProducts(filteredData);
       } catch (error) {
@@ -110,7 +124,7 @@ const Shop = () => {
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [selectedCategory, selectedType, searchTerm]);
+  }, [selectedCategory, selectedType, searchTerm, minPrice, maxPrice, selectedSize, selectedColor]);
 
   const toggleSection = (section: keyof typeof openSections) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
@@ -122,6 +136,9 @@ const Shop = () => {
     setSelectedSize('');
     setSelectedColor('');
     setSelectedType('');
+    setMinPrice(0);
+    setMaxPrice(500000);
+    setSortBy('Relevancia');
   };
 
   const SidebarContent = () => (
@@ -290,17 +307,29 @@ const Shop = () => {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden space-y-4"
+              className="overflow-hidden space-y-4 pt-2"
             >
-              <div className="h-1 w-full bg-white/10 rounded-full relative">
-                <div className="absolute left-[20%] right-[30%] h-full bg-manchester-gold rounded-full"></div>
-                <div className="absolute left-[20%] top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-manchester-white rounded-full cursor-grab"></div>
-                <div className="absolute right-[30%] top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 bg-manchester-white rounded-full cursor-grab"></div>
-              </div>
               <div className="flex justify-between items-center gap-4">
-                <div className="bg-white/5 border border-white/10 rounded-md px-3 py-2 text-xs font-sans text-white/70 w-full text-center">$ 500</div>
-                <span className="text-white/30">-</span>
-                <div className="bg-white/5 border border-white/10 rounded-md px-3 py-2 text-xs font-sans text-white/70 w-full text-center">$ 5000</div>
+                <div className="flex-1">
+                  <span className="text-white/30 text-[10px] uppercase tracking-widest mb-1 block">Mínimo ($)</span>
+                  <input 
+                    type="number" 
+                    min="0"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(Number(e.target.value) || 0)}
+                    className="bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm font-sans text-white w-full focus:outline-none focus:border-manchester-gold transition-colors"
+                  />
+                </div>
+                <div className="flex-1">
+                  <span className="text-white/30 text-[10px] uppercase tracking-widest mb-1 block">Máximo ($)</span>
+                  <input 
+                    type="number" 
+                    min="0"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(Number(e.target.value) || 0)}
+                    className="bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm font-sans text-white w-full focus:outline-none focus:border-manchester-gold transition-colors"
+                  />
+                </div>
               </div>
             </motion.div>
           )}
@@ -309,6 +338,18 @@ const Shop = () => {
 
     </div>
   );
+
+  const sortedProducts = useMemo(() => {
+    let sorted = [...products];
+    if (sortBy === 'Precio: Menor a Mayor') {
+      sorted.sort((a, b) => a.price - b.price);
+    } else if (sortBy === 'Precio: Mayor a Menor') {
+      sorted.sort((a, b) => b.price - a.price);
+    } else if (sortBy === 'Lo más nuevo') {
+      sorted.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+    }
+    return sorted;
+  }, [products, sortBy]);
 
   return (
     <div className="pt-28 pb-24 bg-manchester-black min-h-screen">
@@ -364,7 +405,11 @@ const Shop = () => {
               <span className="font-sans text-xs tracking-widest text-white/40 uppercase">{products.length} Resultados Encontrados</span>
               <div className="flex items-center gap-2">
                 <span className="font-sans text-xs tracking-widest text-white/40 uppercase">Ordenar por:</span>
-                <select className="bg-transparent text-sm font-sans text-white border-b border-white/20 focus:outline-none focus:border-manchester-gold pb-1 cursor-pointer">
+                <select 
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="bg-transparent text-sm font-sans text-white border-b border-white/20 focus:outline-none focus:border-manchester-gold pb-1 cursor-pointer"
+                >
                   <option className="bg-manchester-black text-white">Relevancia</option>
                   <option className="bg-manchester-black text-white">Precio: Menor a Mayor</option>
                   <option className="bg-manchester-black text-white">Precio: Mayor a Menor</option>
@@ -378,9 +423,9 @@ const Shop = () => {
                 <Loader2 className="w-10 h-10 text-manchester-gold animate-spin mb-4" />
                 <span className="text-white/30 font-sans text-xs tracking-widest font-bold uppercase">Actualizando Catálogo...</span>
               </div>
-            ) : products.length > 0 ? (
+            ) : sortedProducts.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
-                {products.map((product) => (
+                {sortedProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
