@@ -2,12 +2,33 @@ import React from 'react';
 import { ShoppingCart, Eye } from 'lucide-react';
 import { Product } from '../types';
 import { Link } from 'react-router-dom';
+import { useCartStore } from '../store/useCartStore';
+import toast from 'react-hot-toast';
 
 interface ProductCardProps {
   product: Product;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const addItem = useCartStore(state => state.addItem);
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigating if this was inside a link
+    e.stopPropagation();
+    
+    if (product.stock > 0 && product.isActive) {
+      addItem(product);
+      toast.success(`${product.name} añadido a la cesta`, {
+        icon: '🛍️',
+        style: {
+          background: '#1a1a1a',
+          color: '#D4AF37',
+          border: '1px solid #D4AF37'
+        }
+      });
+    }
+  };
+
   return (
     <div className="card-premium group">
       {/* Image Container */}
@@ -21,7 +42,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Overlay Actions */}
         <div className="absolute inset-0 bg-gradient-to-t from-manchester-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-end pb-8 space-y-3">
           <div className="flex space-x-3 transform translate-y-8 group-hover:translate-y-0 transition-all duration-500 ease-out">
-            <button className="p-3 bg-manchester-white text-manchester-black rounded-full hover:bg-manchester-gold hover:text-manchester-black transition-colors shadow-lg shadow-black/20">
+            <button 
+              onClick={handleAddToCart}
+              disabled={product.stock <= 0 || !product.isActive}
+              className={`p-3 rounded-full transition-colors shadow-lg shadow-black/20 ${
+                product.stock <= 0 || !product.isActive 
+                ? 'bg-white/20 text-white/50 cursor-not-allowed' 
+                : 'bg-manchester-white text-manchester-black hover:bg-manchester-gold hover:text-manchester-black'
+              }`}
+            >
               <ShoppingCart className="w-5 h-5" />
             </button>
             <Link 

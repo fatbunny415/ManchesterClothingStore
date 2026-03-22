@@ -105,7 +105,18 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                             <Minus className="w-3 h-3" />
                           </button>
                           <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="text-white/40 hover:text-white transition-colors">
+                          <button 
+                            onClick={() => {
+                              if (item.quantity >= item.stock) {
+                                toast.error(`Stock máximo (${item.stock}) alcanzado para este producto`, {
+                                  style: { background: '#222', color: '#fff', fontSize: '12px' }
+                                });
+                              } else {
+                                updateQuantity(item.id, item.quantity + 1);
+                              }
+                            }} 
+                            className={`transition-colors ${item.quantity >= item.stock ? 'text-white/10 cursor-not-allowed' : 'text-white/40 hover:text-white'}`}
+                          >
                             <Plus className="w-3 h-3" />
                           </button>
                         </div>

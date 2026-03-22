@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ProductDetail from './pages/ProductDetail';
 import Orders from './pages/Orders';
+import NotFound from './pages/NotFound';
 import { useEffect } from 'react';
 import { useCartStore } from './store/useCartStore';
 import { useAuthStore } from './store/useAuthStore';
@@ -41,21 +42,23 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/shop" element={<Shop />} />
-            <Route path="/superior" element={<Shop />} /> 
+            <Route path="/superior" element={<Shop />} />
             <Route path="/inferior" element={<Shop />} />
             <Route path="/calzado" element={<Shop />} />
             <Route path="/accesorios" element={<Shop />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/product/:id" element={<ProductDetail />} />
-            <Route 
-              path="/orders" 
+            <Route
+              path="/orders"
               element={
                 <ProtectedRoute>
                   <Orders />
                 </ProtectedRoute>
-              } 
+              }
             />
+            {/* 404 Not Found Catch-All Route */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
         <Footer />

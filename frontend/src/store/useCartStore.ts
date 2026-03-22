@@ -99,6 +99,10 @@ export const useCartStore = create<CartState>()(
         const { isAuthenticated } = useAuthStore.getState();
         const item = get().items.find(i => i.id === productId);
 
+        if (item && quantity > item.stock) {
+          return;
+        }
+
         if (isAuthenticated && item?.dbId) {
           try {
             await cartService.updateItem(item.dbId, quantity);
