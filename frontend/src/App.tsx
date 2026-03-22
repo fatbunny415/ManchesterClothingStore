@@ -10,6 +10,8 @@ import Orders from './pages/Orders';
 import { useEffect } from 'react';
 import { useCartStore } from './store/useCartStore';
 import { useAuthStore } from './store/useAuthStore';
+import { Toaster } from 'react-hot-toast';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   const fetchCart = useCartStore(state => state.fetchCart);
@@ -27,6 +29,13 @@ function App() {
   return (
     <Router>
       <div className="flex flex-col min-h-screen bg-manchester-black text-manchester-white">
+        <Toaster position="bottom-right" toastOptions={{
+          style: {
+            background: '#1a1a1a',
+            color: '#fff',
+            border: '1px solid #D4AF37'
+          }
+        }} />
         <Navbar />
         <main className="flex-grow">
           <Routes>
@@ -39,7 +48,14 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/orders" element={<Orders />} />
+            <Route 
+              path="/orders" 
+              element={
+                <ProtectedRoute>
+                  <Orders />
+                </ProtectedRoute>
+              } 
+            />
           </Routes>
         </main>
         <Footer />

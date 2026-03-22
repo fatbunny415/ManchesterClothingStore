@@ -24,10 +24,8 @@ const Register = () => {
 
     const cleanFullName = fullName.trim();
     const cleanEmail = email.trim();
-    const cleanPassword = password.trim();
-    const cleanConfirmPassword = confirmPassword.trim();
 
-    if (!cleanFullName || !cleanEmail || !cleanPassword || !cleanConfirmPassword) {
+    if (!cleanFullName || !cleanEmail || !password || !confirmPassword) {
       return setError('Por favor, rellena todos los campos requeridos.');
     }
 
@@ -35,11 +33,11 @@ const Register = () => {
       return setError('No se permiten espacios (" ") en el correo electrónico.');
     }
 
-    if (cleanPassword.length < 6) {
+    if (password.length < 6) {
       return setError('La contraseña debe tener al menos 6 caracteres.');
     }
 
-    if (cleanPassword !== cleanConfirmPassword) {
+    if (password !== confirmPassword) {
       return setError('Las contraseñas no coinciden. Por favor, verifícalas y vuelve a intentar.');
     }
 
@@ -49,8 +47,8 @@ const Register = () => {
     grecaptcha.enterprise.ready(async () => {
       try {
         const token = await grecaptcha.enterprise.execute(import.meta.env.VITE_RECAPTCHA_SITE_KEY, {action: 'REGISTER'});
-        
-        await authService.register(cleanFullName, cleanEmail, cleanPassword);
+        // El token se envía al backend para su validación
+        await authService.register(cleanFullName, cleanEmail, password, token);
         setSuccess(true);
         setTimeout(() => navigate('/login'), 2000);
       } catch (err: any) {

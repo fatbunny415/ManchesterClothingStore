@@ -51,9 +51,8 @@ const Login = () => {
     if (permLock || isTempLocked) return;
 
     const cleanEmail = email.trim();
-    const cleanPassword = password.trim();
 
-    if (!cleanEmail || !cleanPassword) {
+    if (!cleanEmail || !password) {
       return setError('Por favor, rellena todos los campos requeridos.');
     }
 
@@ -68,9 +67,8 @@ const Login = () => {
     grecaptcha.enterprise.ready(async () => {
       try {
         const token = await grecaptcha.enterprise.execute(import.meta.env.VITE_RECAPTCHA_SITE_KEY, {action: 'LOGIN'});
-        
-        // El token se debería validar en el backend, por practicidad continuamos normal...
-        const response: any = await authService.login(cleanEmail, cleanPassword);
+        // El token se envía al backend para su validación
+        const response: any = await authService.login(cleanEmail, password, token);
 
         // Éxito: limpiar intentos
         localStorage.removeItem('auth_fails');
