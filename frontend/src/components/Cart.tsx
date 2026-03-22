@@ -5,6 +5,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useNavigate } from 'react-router-dom';
 import { orderService } from '../api/services';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 interface CartProps {
   isOpen: boolean;
@@ -29,10 +30,19 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
       await orderService.createOrder();
       await clearCart();
       onClose();
+      toast.success('PEDIDO PROCESADO EXITOSAMENTE', { 
+        icon: '✨',
+        style: {
+          background: '#D4AF37',
+          color: '#000',
+          fontWeight: 'bold',
+          letterSpacing: '0.1em'
+        }
+      });
       navigate('/orders');
     } catch (error) {
       console.error('Error during checkout:', error);
-      alert('Error al procesar el pedido. Por favor intenta de nuevo.');
+      toast.error('Error al procesar el pedido. Por favor intenta de nuevo.');
     } finally {
       setIsCheckingOut(false);
     }

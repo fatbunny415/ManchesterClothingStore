@@ -2,13 +2,13 @@ import api from './axios';
 import { AuthResponse, User } from '../types';
 
 export const authService = {
-  async login(email: string, password: string): Promise<AuthResponse> {
-    const { data } = await api.post<AuthResponse>('/auth/login', { email, password });
+  async login(email: string, password: string, recaptchaToken?: string): Promise<AuthResponse> {
+    const { data } = await api.post<AuthResponse>('/auth/login', { email, password, recaptchaToken });
     return data;
   },
 
-  async register(fullName: string, email: string, password: string): Promise<{ message: string }> {
-    const { data } = await api.post<{ message: string }>('/auth/register', { fullName, email, password });
+  async register(fullName: string, email: string, password: string, recaptchaToken?: string): Promise<{ message: string }> {
+    const { data } = await api.post<{ message: string }>('/auth/register', { fullName, email, password, recaptchaToken });
     return data;
   },
 };
@@ -69,7 +69,7 @@ export const cartService = {
 
 export const orderService = {
   async getMyOrders() {
-    const { data } = await api.get('/orders');
+    const { data } = await api.get('/orders/my-orders');
     return data;
   },
 
@@ -79,7 +79,9 @@ export const orderService = {
   },
 
   async createOrder() {
-    const { data } = await api.post('/orders');
+    const { data } = await api.post('/orders/checkout');
     return data;
   }
 };
+
+

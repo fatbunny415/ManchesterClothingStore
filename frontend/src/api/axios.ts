@@ -22,8 +22,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      useAuthStore.getState().logout();
-      window.location.href = "/login";
+      // Solo forzamos la redirección si el usuario NO está ya en la pantalla de login.
+      // Si está en /login, simplemente devolvemos el error al catch para que muestre el texto en pantalla.
+      if (window.location.pathname !== "/login") {
+        useAuthStore.getState().logout();
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   },

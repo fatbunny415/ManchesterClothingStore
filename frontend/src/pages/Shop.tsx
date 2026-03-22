@@ -35,14 +35,13 @@ const Shop = () => {
   const sectionData: Record<string, string[]> = {
     superior: ['Camisetas', 'Chaquetas', 'Buzos', 'Camisas', 'Polos'],
     inferior: ['Pantalones', 'Jeans', 'Shorts', 'Sudaderas', 'Deportiva'],
-    calzado: ['Zapatos', 'Tenis', 'Botas', 'Mocasines'],
     accesorios: ['Relojes', 'Gafas', 'Cinturones', 'Gorras', 'Bufandas']
   };
 
   const isMainCategory = sectionData[currentPath] !== undefined;
 
   // Filter options
-  const categories = ['Todos', 'Superior', 'Inferior', 'Calzado', 'Accesorios'];
+  const categories = ['Todos', 'Superior', 'Inferior', 'Accesorios'];
   const sizes = ['XS', 'S', 'M', 'L', 'XL'];
   const colors = [
     { name: 'Negro', class: 'bg-manchester-black border-white/20' },
@@ -83,7 +82,7 @@ const Shop = () => {
           if (sectionData[catKey]) {
             const allowedSubcategories = sectionData[catKey].map(c => c.toLowerCase());
             filteredData = filteredData.filter((p: Product) => 
-               p.category && allowedSubcategories.includes(p.category.toLowerCase())
+               allowedSubcategories.includes(p.category?.toLowerCase() || '')
             );
           }
         }
@@ -91,7 +90,7 @@ const Shop = () => {
         // 2. Filter by Specific Garment Type
         if (selectedType) {
           filteredData = filteredData.filter((p: Product) => 
-            p.category && p.category.toLowerCase() === selectedType.toLowerCase()
+            p.category?.toLowerCase() === selectedType.toLowerCase()
           );
         }
 
@@ -340,7 +339,7 @@ const Shop = () => {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Mobile Filter Toggle */}
-        <div className="md:hidden flex justify-between items-center mb-8 border-b border-white/10 pb-4">
+        <div className="lg:hidden flex justify-between items-center mb-8 border-b border-white/10 pb-4">
           <span className="font-sans text-xs tracking-widest text-white/50">{products.length} Resultados</span>
           <button 
             onClick={() => setIsMobileFiltersOpen(true)}

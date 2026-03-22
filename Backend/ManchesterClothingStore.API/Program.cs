@@ -7,6 +7,18 @@ using ManchesterClothingStore.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// CORS — permitir frontend Vite
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173", "http://localhost:4173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 // Controllers
 builder.Services.AddControllers();
 
@@ -43,6 +55,7 @@ builder.Services.AddSwaggerGen(options =>
 // DbContext SQLite
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
 );
 
 // JWT
@@ -82,6 +95,9 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+// CORS antes de Auth
+app.UseCors("AllowFrontend");
 
 // Auth antes de Authorization
 app.UseAuthentication();
