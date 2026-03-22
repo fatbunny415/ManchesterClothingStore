@@ -37,3 +37,21 @@ export interface ApiResponse<T> {
   data?: T;
   detail?: string;
 }
+
+export interface OrderItem {
+  id: string;
+  productId: string;
+  product: Product;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface Order {
+  id: string;
+  userId: string;
+  status: number;
+  totalAmount: number;
+  items: OrderItem[];
+  createdAt: string;
+  updatedAt?: string;
+}

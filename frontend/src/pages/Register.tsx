@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User as UserIcon, Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
+import { User as UserIcon, Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, CheckCircle2, Circle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../api/services';
 import { motion } from 'framer-motion';
@@ -17,6 +17,18 @@ const Register = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
+  // Password strength logic
+  const passwordChecks = {
+    length: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    number: /\d/.test(password),
+    special: /[\@\$\!\%\*\?\&\#\^\(\)]/.test(password),
+  };
+  const passedChecks = Object.values(passwordChecks).filter(Boolean).length;
+  const strengthLabel = passedChecks <= 1 ? 'Débil' : passedChecks <= 3 ? 'Media' : 'Fuerte';
+  const strengthColor = passedChecks <= 1 ? 'bg-red-500' : passedChecks <= 3 ? 'bg-yellow-500' : 'bg-green-500';
+  const strengthTextColor = passedChecks <= 1 ? 'text-red-400' : passedChecks <= 3 ? 'text-yellow-400' : 'text-green-400';
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,8 +45,12 @@ const Register = () => {
       return setError('No se permiten espacios (" ") en el correo electrónico.');
     }
 
-    if (password.length < 6) {
-      return setError('La contraseña debe tener al menos 6 caracteres.');
+    if (password.length < 8) {
+      return setError('La contraseña debe tener al menos 8 caracteres.');
+    }
+
+    if (passedChecks < 4) {
+      return setError('La contraseña no cumple con todos los requisitos de seguridad.');
     }
 
     if (password !== confirmPassword) {
@@ -160,6 +176,42 @@ const Register = () => {
                 </div>
               </div>
 
+              {/* Password Strength Meter */}
+              {password.length > 0 && (
+                <div className="space-y-2 -mt-3">
+                  {/* Progress Bar */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-500 ${strengthColor}`}
+                        style={{ width: `${(passedChecks / 4) * 100}%` }}
+                      />
+                    </div>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${strengthTextColor}`}>
+                      {strengthLabel}
+                    </span>
+                  </div>
+                  {/* Requirements Checklist */}
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                    {[
+                      { label: '8+ caracteres', met: passwordChecks.length },
+                      { label: '1 mayúscula', met: passwordChecks.uppercase },
+                      { label: '1 número', met: passwordChecks.number },
+                      { label: '1 especial (@$!%)', met: passwordChecks.special },
+                    ].map((req) => (
+                      <div key={req.label} className="flex items-center gap-1.5">
+                        {req.met 
+                          ? <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" /> 
+                          : <Circle className="w-3 h-3 text-white/15 shrink-0" />
+                        }
+                        <span className={`text-[10px] tracking-wide ${req.met ? 'text-white/60' : 'text-white/25'}`}>
+                          {req.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div>
                 <label className="block text-xs font-bold tracking-widest text-manchester-gold uppercase mb-3 ml-1">Confirmar Contraseña</label>
                 <div className="relative group">

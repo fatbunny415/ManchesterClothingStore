@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { useCartStore } from '../store/useCartStore';
 import Cart from './Cart';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -42,6 +43,7 @@ const Navbar = () => {
             <div className="hidden md:flex items-center space-x-5">
               <button
                 onClick={() => setIsCartOpen(true)}
+                aria-label="Abrir Carrito"
                 className="relative p-2 hover:bg-white/5 rounded-full transition-colors group"
               >
                 <ShoppingBag className="w-5 h-5 text-white/70 group-hover:text-manchester-gold transition-colors" />
@@ -54,11 +56,11 @@ const Navbar = () => {
 
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4 border-l border-white/10 pl-5">
-                  <Link to="/orders" className="p-2 hover:bg-white/5 rounded-full group transition-colors">
+                  <Link to="/orders" aria-label="Historial de Órdenes" className="p-2 hover:bg-white/5 rounded-full group transition-colors">
                     <Package className="w-5 h-5 text-white/70 group-hover:text-manchester-gold" />
                   </Link>
                   <span className="text-xs uppercase font-semibold text-white/40 tracking-widest">{user?.fullName?.split(' ')[0] || 'User'}</span>
-                  <button onClick={handleLogout} className="p-2 hover:bg-red-500/10 rounded-full group transition-colors">
+                  <button onClick={handleLogout} aria-label="Cerrar Sesión" className="p-2 hover:bg-red-500/10 rounded-full group transition-colors">
                     <LogOut className="w-5 h-5 text-white/50 group-hover:text-red-400" />
                   </button>
                 </div>
@@ -76,6 +78,7 @@ const Navbar = () => {
             <div className="md:hidden flex items-center">
               <button
                 onClick={() => setIsCartOpen(true)}
+                aria-label="Abrir Carrito"
                 className="relative p-2 mr-2"
               >
                 <ShoppingBag className="w-6 h-6" />
@@ -85,7 +88,7 @@ const Navbar = () => {
                   </span>
                 )}
               </button>
-              <button onClick={() => setIsOpen(!isOpen)} className="p-2">
+              <button onClick={() => setIsOpen(!isOpen)} aria-label={isOpen ? "Cerrar Menú" : "Abrir Menú"} className="p-2">
                 {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             </div>
@@ -93,21 +96,28 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Menu Content */}
-        {isOpen && (
-          <div className="md:hidden bg-manchester-dark/95 backdrop-blur-md border-b border-white/5 py-6 animate-fade-in">
-            <div className="px-6 space-y-5">
-              <Link to="/superior"   className="block text-base font-semibold tracking-widest uppercase text-white/70 hover:text-manchester-gold transition-colors" onClick={() => setIsOpen(false)}>Superior</Link>
-              <Link to="/inferior"   className="block text-base font-semibold tracking-widest uppercase text-white/70 hover:text-manchester-gold transition-colors" onClick={() => setIsOpen(false)}>Inferior</Link>
-              <Link to="/accesorios" className="block text-base font-semibold tracking-widest uppercase text-white/70 hover:text-manchester-gold transition-colors" onClick={() => setIsOpen(false)}>Accesorios</Link>
-              <hr className="border-white/5" />
-              {isAuthenticated ? (
-                <button onClick={() => { handleLogout(); setIsOpen(false); }} className="text-red-400 font-bold uppercase tracking-widest text-sm">Cerrar Sesión</button>
-              ) : (
-                <Link to="/login" className="block text-manchester-gold font-bold uppercase tracking-widest text-sm" onClick={() => setIsOpen(false)}>Iniciar Sesión</Link>
-              )}
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="md:hidden overflow-hidden bg-manchester-dark/95 backdrop-blur-md border-b border-white/5"
+            >
+              <div className="px-6 py-6 space-y-5">
+                <Link to="/superior"   className="block text-base font-semibold tracking-widest uppercase text-white/70 hover:text-manchester-gold transition-colors" onClick={() => setIsOpen(false)}>Superior</Link>
+                <Link to="/inferior"   className="block text-base font-semibold tracking-widest uppercase text-white/70 hover:text-manchester-gold transition-colors" onClick={() => setIsOpen(false)}>Inferior</Link>
+                <Link to="/accesorios" className="block text-base font-semibold tracking-widest uppercase text-white/70 hover:text-manchester-gold transition-colors" onClick={() => setIsOpen(false)}>Accesorios</Link>
+                <hr className="border-white/5" />
+                {isAuthenticated ? (
+                  <button onClick={() => { handleLogout(); setIsOpen(false); }} className="text-red-400 font-bold uppercase tracking-widest text-sm">Cerrar Sesión</button>
+                ) : (
+                  <Link to="/login" className="block text-manchester-gold font-bold uppercase tracking-widest text-sm" onClick={() => setIsOpen(false)}>Iniciar Sesión</Link>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />

@@ -41,6 +41,7 @@ const Home = () => {
         <img
           src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop"
           alt="Manchester Hero"
+          loading="lazy"
           className="hero-img absolute inset-0 w-full h-full object-cover"
         />
 
@@ -157,6 +158,7 @@ const Home = () => {
                 <img
                   src={cat.img}
                   alt={cat.title}
+                  loading="lazy"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-110"
                 />
                 {/* Overlay gradiente bottom-up */}

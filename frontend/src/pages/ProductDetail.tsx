@@ -12,6 +12,7 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<string>('');
 
   const addItem = useCartStore(state => state.addItem);
   const navigate = useNavigate();
@@ -77,6 +78,7 @@ const ProductDetail = () => {
             <img 
               src={product.imageUrl || 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1000&auto=format&fit=crop'} 
               alt={product.name} 
+              loading="lazy"
               className="w-full h-full object-cover"
             />
           </motion.div>
@@ -129,9 +131,42 @@ const ProductDetail = () => {
               </div>
             </div>
 
+            {/* Size Selector */}
+            {(() => {
+              const availableSizes = product.sizes
+                ? product.sizes.split(',').map(s => s.trim()).filter(Boolean)
+                : [];
+              if (availableSizes.length === 0) return null;
+              return (
+                <div className="mb-8">
+                  <h4 className="text-xs font-bold tracking-widest text-manchester-gold uppercase mb-4">
+                    Talla {selectedSize && <span className="text-white/60">— {selectedSize}</span>}
+                  </h4>
+                  <div className="flex flex-wrap gap-3">
+                    {availableSizes.map(size => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(selectedSize === size ? '' : size)}
+                        className={`min-w-[48px] h-12 px-4 flex items-center justify-center text-sm font-bold border transition-all duration-200 ${
+                          selectedSize === size
+                            ? 'border-manchester-gold bg-manchester-gold/10 text-manchester-gold'
+                            : 'border-white/10 text-white/50 hover:border-white/30 hover:text-white'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                  {!selectedSize && (
+                    <p className="text-[10px] text-white/25 mt-2 tracking-widest uppercase">Selecciona una talla para continuar</p>
+                  )}
+                </div>
+              );
+            })()}
+
             <button 
               onClick={handleAddToCart}
-              disabled={product.stock <= 0 || adding || !product.isActive}
+              disabled={product.stock <= 0 || adding || !product.isActive || (!!product.sizes && !selectedSize)}
               className={`w-full py-5 rounded-full font-bold tracking-[0.2em] text-sm flex items-center justify-center transition-all duration-300 ${
                 added 
                   ? 'bg-green-500 text-white' 
