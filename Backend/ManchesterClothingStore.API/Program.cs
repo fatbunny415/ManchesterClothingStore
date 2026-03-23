@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.RateLimiting;
 
 using ManchesterClothingStore.Infrastructure.Persistence;
+using ManchesterClothingStore.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -81,6 +83,28 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+// Servicio de reCAPTCHA v3
+builder.Services.AddSingleton<RecaptchaService>();
+
+// Rate Limiting — 5 intentos por IP cada 15 minutos en login
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("login", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(15),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            }
+        )
+    );
+});
+
 var app = builder.Build();
 
 // Swagger solo en Development
@@ -98,6 +122,9 @@ if (!app.Environment.IsDevelopment())
 
 // CORS antes de Auth
 app.UseCors("AllowFrontend");
+
+// Rate Limiter antes de Auth
+app.UseRateLimiter();
 
 // Auth antes de Authorization
 app.UseAuthentication();

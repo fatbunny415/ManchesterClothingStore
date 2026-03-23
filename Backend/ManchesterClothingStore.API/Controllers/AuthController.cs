@@ -1,14 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 
 using ManchesterClothingStore.Infrastructure.Persistence;
 using ManchesterClothingStore.Domain.Entities;
 using ManchesterClothingStore.Application.DTOs;
+using ManchesterClothingStore.API.Services;
 
 namespace ManchesterClothingStore.API.Controllers;
 
@@ -18,11 +21,13 @@ public class AuthController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly RecaptchaService _recaptchaService;
 
-    public AuthController(AppDbContext context, IConfiguration configuration)
+    public AuthController(AppDbContext context, IConfiguration configuration, RecaptchaService recaptchaService)
     {
         _context = context;
         _configuration = configuration;
+        _recaptchaService = recaptchaService;
     }
 
     // =========================
@@ -31,34 +36,57 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
+        // Validate reCAPTCHA
+        var isHuman = await _recaptchaService.ValidateAsync(dto.RecaptchaToken, "register");
+        if (!isHuman)
+            return BadRequest(new { message = "Verificación reCAPTCHA fallida. Intenta de nuevo." });
+
+        // Server-side password validation
+        if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 8)
+            return BadRequest(new { message = "La contraseña debe tener al menos 8 caracteres." });
+
+        if (!Regex.IsMatch(dto.Password, @"[A-Z]"))
+            return BadRequest(new { message = "La contraseña debe contener al menos una letra mayúscula." });
+
+        if (!Regex.IsMatch(dto.Password, @"\d"))
+            return BadRequest(new { message = "La contraseña debe contener al menos un número." });
+
+        if (!Regex.IsMatch(dto.Password, @"[@$!%*?&#^()]"))
+            return BadRequest(new { message = "La contraseña debe contener al menos un carácter especial (@$!%*?&#^())." });
+
         if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
-            return BadRequest("El usuario ya existe.");
+            return BadRequest(new { message = "El usuario ya existe." });
 
         var user = new User
         {
             FullName = dto.FullName,
             Email = dto.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
-            // Role queda por defecto como Cliente
         };
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        return Ok("Usuario registrado correctamente.");
+        return Ok(new { message = "Usuario registrado correctamente." });
     }
 
     // =========================
-    // LOGIN
+    // LOGIN (Rate Limited)
     // =========================
     [HttpPost("login")]
+    [EnableRateLimiting("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
+        // Validate reCAPTCHA
+        var isHuman = await _recaptchaService.ValidateAsync(dto.RecaptchaToken, "login");
+        if (!isHuman)
+            return BadRequest(new { message = "Verificación reCAPTCHA fallida. Intenta de nuevo." });
+
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Email == dto.Email);
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
-            return Unauthorized("Credenciales inválidas.");
+            return Unauthorized(new { message = "Credenciales inválidas." });
 
         var token = GenerateJwtToken(user);
 
@@ -67,61 +95,67 @@ public class AuthController : ControllerBase
             token,
             role = user.Role.ToString(),
             email = user.Email,
-            name = user.FullName
+            fullName = user.FullName
         });
     }
 
+    // =========================
+    // FORGOT PASSWORD
+    // =========================
     [HttpPost("forgot-password")]
-public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
-{
-    var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-
-    if (user == null)
-        return NotFound("No existe un usuario con ese correo.");
-
-    var token = Guid.NewGuid().ToString("N");
-
-    user.PasswordResetToken = token;
-    user.PasswordResetTokenExpiresAt = DateTime.UtcNow.AddMinutes(15);
-
-    await _context.SaveChangesAsync();
-
-    return Ok(new
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
     {
-        message = "Token de recuperación generado correctamente.",
-        resetToken = token,
-        expiresAt = user.PasswordResetTokenExpiresAt
-    });
-}
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
 
-[HttpPost("reset-password")]
-public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
-{
-    var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+        if (user == null)
+            return NotFound(new { message = "No existe un usuario con ese correo." });
 
-    if (user == null)
-        return NotFound("Usuario no encontrado.");
+        var resetToken = Guid.NewGuid().ToString("N");
 
-    if (string.IsNullOrWhiteSpace(user.PasswordResetToken) ||
-        user.PasswordResetToken != dto.Token)
-    {
-        return BadRequest("Token inválido.");
+        user.PasswordResetToken = resetToken;
+        user.PasswordResetTokenExpiresAt = DateTime.UtcNow.AddMinutes(15);
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            message = "Token de recuperación generado correctamente.",
+            resetToken,
+            expiresAt = user.PasswordResetTokenExpiresAt
+        });
     }
 
-    if (!user.PasswordResetTokenExpiresAt.HasValue ||
-        user.PasswordResetTokenExpiresAt.Value < DateTime.UtcNow)
+    // =========================
+    // RESET PASSWORD
+    // =========================
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
     {
-        return BadRequest("El token ha expirado.");
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+
+        if (user == null)
+            return NotFound(new { message = "Usuario no encontrado." });
+
+        if (string.IsNullOrWhiteSpace(user.PasswordResetToken) ||
+            user.PasswordResetToken != dto.Token)
+        {
+            return BadRequest(new { message = "Token inválido." });
+        }
+
+        if (!user.PasswordResetTokenExpiresAt.HasValue ||
+            user.PasswordResetTokenExpiresAt.Value < DateTime.UtcNow)
+        {
+            return BadRequest(new { message = "El token ha expirado." });
+        }
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        user.PasswordResetToken = null;
+        user.PasswordResetTokenExpiresAt = null;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Contraseña restablecida correctamente." });
     }
-
-    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
-    user.PasswordResetToken = null;
-    user.PasswordResetTokenExpiresAt = null;
-
-    await _context.SaveChangesAsync();
-
-    return Ok("Contraseña restablecida correctamente.");
-}
 
     // =========================
     // GENERATE JWT
