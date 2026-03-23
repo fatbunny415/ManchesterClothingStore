@@ -36,6 +36,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <img
           src={product.imageUrl || 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1000&auto=format&fit=crop'}
           alt={product.name}
+          loading="lazy"
           className="w-full h-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-110"
         />
         

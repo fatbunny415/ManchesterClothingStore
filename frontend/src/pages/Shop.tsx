@@ -3,6 +3,7 @@ import { Search, X, SlidersHorizontal, Loader2, ChevronDown, ChevronUp, Check } 
 import { productService } from '../api/services';
 import { Product } from '../types';
 import ProductCard from '../components/ProductCard';
+import SkeletonProductCard from '../components/SkeletonProductCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 
@@ -280,6 +281,7 @@ const Shop = () => {
                   key={color.name}
                   onClick={() => setSelectedColor(selectedColor === color.name ? '' : color.name)}
                   title={color.name}
+                  aria-label={`Filtrar por color ${color.name}`}
                   className={`relative w-8 h-8 rounded-full border flex items-center justify-center transition-all ${color.class} ${
                     selectedColor === color.name ? 'ring-2 ring-manchester-gold ring-offset-2 ring-offset-manchester-black' : 'hover:scale-110'
                   }`}
@@ -419,9 +421,10 @@ const Shop = () => {
             </div>
 
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-40">
-                <Loader2 className="w-10 h-10 text-manchester-gold animate-spin mb-4" />
-                <span className="text-white/30 font-sans text-xs tracking-widest font-bold uppercase">Actualizando Catálogo...</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <SkeletonProductCard key={i} />
+                ))}
               </div>
             ) : sortedProducts.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
@@ -463,6 +466,9 @@ const Shop = () => {
             
             {/* Drawer */}
             <motion.div 
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="mobile-filters-title"
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
@@ -470,8 +476,8 @@ const Shop = () => {
               className="absolute top-0 left-0 bottom-0 w-[85%] max-w-[320px] bg-manchester-dark border-r border-white/10 shadow-2xl overflow-y-auto"
             >
               <div className="flex justify-between items-center p-6 border-b border-white/10 sticky top-0 bg-manchester-dark/95 backdrop-blur z-10">
-                <h2 className="font-serif text-xl font-bold text-white">Filtros</h2>
-                <button onClick={() => setIsMobileFiltersOpen(false)} className="p-2 -mr-2 text-white/50 hover:text-white">
+                <h2 id="mobile-filters-title" className="font-serif text-xl font-bold text-white">Filtros</h2>
+                <button aria-label="Cerrar filtros" onClick={() => setIsMobileFiltersOpen(false)} className="p-2 -mr-2 text-white/50 hover:text-white">
                   <X className="w-5 h-5" />
                 </button>
               </div>

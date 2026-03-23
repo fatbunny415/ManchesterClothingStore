@@ -126,6 +126,10 @@ namespace ManchesterClothingStore.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Colors")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -146,6 +150,10 @@ namespace ManchesterClothingStore.Infrastructure.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Sizes")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Stock")
                         .HasColumnType("INTEGER");
@@ -174,6 +182,12 @@ namespace ManchesterClothingStore.Infrastructure.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PasswordResetToken")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("PasswordResetTokenExpiresAt")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Role")

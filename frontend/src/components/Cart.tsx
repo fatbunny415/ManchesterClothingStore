@@ -63,6 +63,9 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
 
           {/* Drawer */}
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cart-title"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -72,12 +75,12 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
             {/* Header */}
             <div className="p-6 border-b border-white/5 flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-bold tracking-tighter">CESTA DE COMPRA</h2>
+                <h2 id="cart-title" className="text-xl font-bold tracking-tighter">CESTA DE COMPRA</h2>
                 <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] mt-1 font-bold">
                    {totalItems()} ARTÍCULOS SELECCIONADOS
                 </p>
               </div>
-              <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors">
+              <button onClick={onClose} aria-label="Cerrar Carrito" className="p-2 hover:bg-white/5 rounded-full transition-colors">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -93,7 +96,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                     <div className="flex-grow">
                       <div className="flex justify-between mb-1">
                         <h4 className="font-bold text-sm tracking-tight group-hover:text-manchester-gold transition-colors">{item.name}</h4>
-                        <button onClick={() => removeItem(item.id)} className="text-white/20 hover:text-red-500 transition-colors">
+                        <button onClick={() => removeItem(item.id)} aria-label={`Eliminar ${item.name} del carrito`} className="text-white/20 hover:text-red-500 transition-colors">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -101,7 +104,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                       
                       <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-3 bg-manchester-black rounded-full px-3 py-1 border border-white/5">
-                          <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="text-white/40 hover:text-white transition-colors">
+                          <button onClick={() => updateQuantity(item.id, item.quantity - 1)} aria-label={`Disminuir cantidad de ${item.name}`} className="text-white/40 hover:text-white transition-colors">
                             <Minus className="w-3 h-3" />
                           </button>
                           <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
@@ -115,6 +118,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                                 updateQuantity(item.id, item.quantity + 1);
                               }
                             }} 
+                            aria-label={`Aumentar cantidad de ${item.name}`}
                             className={`transition-colors ${item.quantity >= item.stock ? 'text-white/10 cursor-not-allowed' : 'text-white/40 hover:text-white'}`}
                           >
                             <Plus className="w-3 h-3" />

@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ManchesterClothingStore.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260309210128_AddPasswordResetFields")]
-    partial class AddPasswordResetFields
+    [Migration("20260322073549_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -129,6 +129,10 @@ namespace ManchesterClothingStore.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Colors")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -149,6 +153,10 @@ namespace ManchesterClothingStore.Infrastructure.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Sizes")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Stock")
                         .HasColumnType("INTEGER");
