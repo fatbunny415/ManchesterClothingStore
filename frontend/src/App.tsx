@@ -14,6 +14,15 @@ import { useAuthStore } from './store/useAuthStore';
 import { Toaster } from 'react-hot-toast';
 import ProtectedRoute from './components/ProtectedRoute';
 
+// Admin imports
+import AdminRoute from './components/admin/AdminRoute';
+import AdminLayout from './components/admin/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminProducts from './pages/admin/AdminProducts';
+import AdminOrders from './pages/admin/AdminOrders';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminProfile from './pages/admin/AdminProfile';
+
 function App() {
   const fetchCart = useCartStore(state => state.fetchCart);
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
@@ -37,31 +46,56 @@ function App() {
             border: '1px solid #D4AF37'
           }
         }} />
-        <Navbar />
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/superior" element={<Shop />} />
-            <Route path="/inferior" element={<Shop />} />
-            <Route path="/calzado" element={<Shop />} />
-            <Route path="/accesorios" element={<Shop />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route
-              path="/orders"
-              element={
-                <ProtectedRoute>
-                  <Orders />
-                </ProtectedRoute>
-              }
-            />
-            {/* 404 Not Found Catch-All Route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
-        <Footer />
+        <Routes>
+          {/* ========================= */}
+          {/* Admin Routes (no Navbar/Footer) */}
+          {/* ========================= */}
+          <Route element={<AdminRoute />}>
+            <Route element={<AdminLayout />}>
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/products" element={<AdminProducts />} />
+              <Route path="/admin/orders" element={<AdminOrders />} />
+              <Route path="/admin/users" element={<AdminUsers />} /> {/* Added AdminUsers route */}
+              <Route path="/admin/profile" element={<AdminProfile />} />
+            </Route>
+          </Route>
+
+          {/* ========================= */}
+          {/* Public Routes (with Navbar/Footer) */}
+          {/* ========================= */}
+          <Route
+            path="*"
+            element={
+              <>
+                <Navbar />
+                <main className="flex-grow">
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/shop" element={<Shop />} />
+                    <Route path="/superior" element={<Shop />} />
+                    <Route path="/inferior" element={<Shop />} />
+                    <Route path="/calzado" element={<Shop />} />
+                    <Route path="/accesorios" element={<Shop />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/product/:id" element={<ProductDetail />} />
+                    <Route
+                      path="/orders"
+                      element={
+                        <ProtectedRoute>
+                          <Orders />
+                        </ProtectedRoute>
+                      }
+                    />
+                    {/* 404 Not Found Catch-All Route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
+                <Footer />
+              </>
+            }
+          />
+        </Routes>
       </div>
     </Router>
   );

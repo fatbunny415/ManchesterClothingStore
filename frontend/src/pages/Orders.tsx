@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { orderService } from '../api/services';
-import { Order, OrderItem } from '../types';
+import { Order, OrderItem, getOrderStatusLabel } from '../types';
 import { Loader2, Package, Calendar, CreditCard, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -81,25 +81,21 @@ const Orders = () => {
                     </div>
                     <div className="hidden md:block text-right">
                       <span className="inline-block px-3 py-1 rounded-full bg-white/5 text-[9px] font-bold tracking-widest text-white/60 border border-white/10 uppercase">
-                        {order.status === 0 ? 'Pendiente' : 'Completado'}
+                        {getOrderStatusLabel(order.status)}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-4 border-t border-white/5 pt-6">
-                  {order.items.map((item: OrderItem) => (
-                    <div key={item.id} className="flex items-center justify-between group/item">
+                  {order.items.map((item: OrderItem, idx: number) => (
+                    <div key={item.productId + '-' + idx} className="flex items-center justify-between group/item">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-lg bg-white/5 overflow-hidden">
-                          {item.product.imageUrl ? (
-                            <img src={item.product.imageUrl} alt={item.product.name} className="w-full h-full object-cover opacity-80 group-hover/item:opacity-100 transition-opacity" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-white/10 italic text-[8px]">NO IMG</div>
-                          )}
+                          <div className="w-full h-full flex items-center justify-center text-white/10 italic text-[8px]">IMG</div>
                         </div>
                         <div>
-                          <p className="text-xs font-bold tracking-wide uppercase">{item.product.name}</p>
+                          <p className="text-xs font-bold tracking-wide uppercase">{item.productName || 'Producto'}</p>
                           <p className="text-[10px] text-white/40 tracking-widest">{item.quantity} x ${item.unitPrice.toLocaleString()}</p>
                         </div>
                       </div>

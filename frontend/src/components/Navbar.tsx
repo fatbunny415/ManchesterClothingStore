@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, User, LogOut, Menu, X, Package } from 'lucide-react';
+import { ShoppingBag, User, LogOut, Menu, X, Package, Shield } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { useCartStore } from '../store/useCartStore';
@@ -55,11 +55,21 @@ const Navbar = () => {
               </button>
 
               {isAuthenticated ? (
-                <div className="flex items-center space-x-4 border-l border-white/10 pl-5">
+                <div className="flex items-center space-x-3 border-l border-white/10 pl-5">
+                  {user?.role === 'Admin' && (
+                    <Link 
+                      to="/admin" 
+                      title="Ir al Panel" 
+                      className="p-1.5 flex items-center gap-1.5 bg-manchester-gold/10 hover:bg-manchester-gold border border-manchester-gold/30 hover:border-manchester-gold text-manchester-gold hover:text-black rounded-full group transition-all"
+                    >
+                      <Shield className="w-4 h-4" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest pr-1 hidden lg:block">Panel</span>
+                    </Link>
+                  )}
                   <Link to="/orders" aria-label="Historial de Órdenes" className="p-2 hover:bg-white/5 rounded-full group transition-colors">
                     <Package className="w-5 h-5 text-white/70 group-hover:text-manchester-gold" />
                   </Link>
-                  <span className="text-xs uppercase font-semibold text-white/40 tracking-widest">{user?.fullName?.split(' ')[0] || 'User'}</span>
+                  <span className="text-xs uppercase font-semibold text-white/40 tracking-widest px-2">{user?.fullName?.split(' ')[0] || 'User'}</span>
                   <button onClick={handleLogout} aria-label="Cerrar Sesión" className="p-2 hover:bg-red-500/10 rounded-full group transition-colors">
                     <LogOut className="w-5 h-5 text-white/50 group-hover:text-red-400" />
                   </button>
@@ -110,7 +120,16 @@ const Navbar = () => {
                 <Link to="/accesorios" className="block text-base font-semibold tracking-widest uppercase text-white/70 hover:text-manchester-gold transition-colors" onClick={() => setIsOpen(false)}>Accesorios</Link>
                 <hr className="border-white/5" />
                 {isAuthenticated ? (
-                  <button onClick={() => { handleLogout(); setIsOpen(false); }} className="text-red-400 font-bold uppercase tracking-widest text-sm">Cerrar Sesión</button>
+                  <div className="flex flex-col gap-5">
+                    {user?.role === 'Admin' && (
+                      <Link to="/admin" className="text-manchester-gold font-bold uppercase tracking-widest text-sm flex items-center gap-2" onClick={() => setIsOpen(false)}>
+                        <Shield className="w-4 h-4" /> Panel de Administración
+                      </Link>
+                    )}
+                    <button onClick={() => { handleLogout(); setIsOpen(false); }} className="text-red-400 font-bold uppercase tracking-widest text-sm text-left">
+                      Cerrar Sesión
+                    </button>
+                  </div>
                 ) : (
                   <Link to="/login" className="block text-manchester-gold font-bold uppercase tracking-widest text-sm" onClick={() => setIsOpen(false)}>Iniciar Sesión</Link>
                 )}
