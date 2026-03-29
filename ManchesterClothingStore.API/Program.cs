@@ -40,9 +40,14 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// DbContext SQLite
+// Services
+builder.Services.AddHttpClient<ManchesterClothingStore.Application.Interfaces.IRecaptchaService, ManchesterClothingStore.Infrastructure.Services.RecaptchaService>();
+
+// DbContext MongoDB
+var mongoConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "mongodb://localhost:27017";
+var mongoDatabase = builder.Configuration["MongoDbSettings:DatabaseName"] ?? "ManchesterClothingDb";
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseMongoDB(mongoConnectionString, mongoDatabase)
 );
 
 // JWT
@@ -69,6 +74,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+// Se ejecuta el seed de la base de datos
+DbInitializer.Initialize(app.Services);
 
 // Swagger solo en Development
 if (app.Environment.IsDevelopment())

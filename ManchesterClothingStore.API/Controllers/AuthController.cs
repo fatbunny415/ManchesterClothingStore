@@ -18,11 +18,16 @@ public class AuthController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly ManchesterClothingStore.Application.Interfaces.IRecaptchaService _recaptchaService;
 
-    public AuthController(AppDbContext context, IConfiguration configuration)
+    public AuthController(
+        AppDbContext context, 
+        IConfiguration configuration,
+        ManchesterClothingStore.Application.Interfaces.IRecaptchaService recaptchaService)
     {
         _context = context;
         _configuration = configuration;
+        _recaptchaService = recaptchaService;
     }
 
     // =========================
@@ -31,6 +36,9 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
+        if (!await _recaptchaService.VerifyTokenAsync(dto.RecaptchaToken))
+            return BadRequest("Token de seguridad inválido.");
+
         if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
             return BadRequest("El usuario ya existe.");
 
@@ -54,6 +62,9 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
+        if (!await _recaptchaService.VerifyTokenAsync(dto.RecaptchaToken))
+            return BadRequest("Token de seguridad inválido.");
+
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Email == dto.Email);
 
@@ -74,6 +85,9 @@ public class AuthController : ControllerBase
     [HttpPost("forgot-password")]
 public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
 {
+    if (!await _recaptchaService.VerifyTokenAsync(dto.RecaptchaToken))
+        return BadRequest("Token de seguridad inválido.");
+
     var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
 
     if (user == null)
@@ -97,6 +111,9 @@ public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
 [HttpPost("reset-password")]
 public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
 {
+    if (!await _recaptchaService.VerifyTokenAsync(dto.RecaptchaToken))
+        return BadRequest("Token de seguridad inválido.");
+
     var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
 
     if (user == null)

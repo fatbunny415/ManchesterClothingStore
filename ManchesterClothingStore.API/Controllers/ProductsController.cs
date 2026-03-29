@@ -62,7 +62,7 @@ public class ProductsController : ControllerBase
             Description = dto.Description,
             Price = dto.Price,
             Stock = dto.Stock,
-            Category = dto.Category,
+            CategoryId = dto.CategoryId,
             ImageUrl = dto.ImageUrl,
             IsActive = dto.IsActive,
             CreatedAt = DateTime.UtcNow
@@ -93,7 +93,7 @@ public class ProductsController : ControllerBase
         product.Description = dto.Description;
         product.Price = dto.Price;
         product.Stock = dto.Stock;
-        product.Category = dto.Category;
+        product.CategoryId = dto.CategoryId;
         product.ImageUrl = dto.ImageUrl;
         product.IsActive = dto.IsActive;
 
@@ -128,23 +128,38 @@ public class ProductsController : ControllerBase
     [HttpPost("seed")]
     public async Task<IActionResult> Seed()
     {
-        if (await _context.Products.AnyAsync())
-            return BadRequest("Ya existen productos en la base de datos.");
+        if (await _context.Products.AnyAsync() || await _context.Categories.AnyAsync())
+            return BadRequest("Ya existen productos o categorías en la base de datos.");
 
         var now = DateTime.UtcNow;
 
+        var catCamisetas = new Category { Name = "Camisetas", Description = "Camisetas de todo tipo" };
+        var catPantalones = new Category { Name = "Pantalones", Description = "Pantalones y jeans" };
+        var catChaquetas = new Category { Name = "Chaquetas", Description = "Ropa para el frío" };
+        var catBuzos = new Category { Name = "Buzos", Description = "Buzos con y sin capota" };
+        var catAccesorios = new Category { Name = "Accesorios", Description = "Gorras y útiles" };
+        var catCalzado = new Category { Name = "Calzado", Description = "Zapatos y tenis" };
+        var catCamisas = new Category { Name = "Camisas", Description = "Camisas formales" };
+        var catPolos = new Category { Name = "Polos", Description = "Polos de colores" };
+        var catDeportiva = new Category { Name = "Deportiva", Description = "Ropa deportiva" };
+
+        var categories = new List<Category> { catCamisetas, catPantalones, catChaquetas, catBuzos, catAccesorios, catCalzado, catCamisas, catPolos, catDeportiva };
+        
+        _context.Categories.AddRange(categories);
+        await _context.SaveChangesAsync();
+
         var products = new List<Product>
         {
-            new() { Name="Camiseta Negra", Description="Algodón premium", Price=45000, Stock=20, Category="Camisetas", ImageUrl="https://example.com/camiseta-negra.png", IsActive=true, CreatedAt=now },
-            new() { Name="Camiseta Blanca", Description="Básica unisex", Price=40000, Stock=25, Category="Camisetas", ImageUrl="https://example.com/camiseta-blanca.png", IsActive=true, CreatedAt=now },
-            new() { Name="Jean Slim", Description="Jean azul slim fit", Price=110000, Stock=15, Category="Pantalones", ImageUrl="https://example.com/jean-slim.png", IsActive=true, CreatedAt=now },
-            new() { Name="Chaqueta Denim", Description="Chaqueta clásica", Price=160000, Stock=10, Category="Chaquetas", ImageUrl="https://example.com/chaqueta-denim.png", IsActive=true, CreatedAt=now },
-            new() { Name="Hoodie Gris", Description="Buzo con capota", Price=95000, Stock=18, Category="Buzos", ImageUrl="https://example.com/hoodie-gris.png", IsActive=true, CreatedAt=now },
-            new() { Name="Gorra Negra", Description="Gorra ajustable", Price=35000, Stock=30, Category="Accesorios", ImageUrl="https://example.com/gorra-negra.png", IsActive=true, CreatedAt=now },
-            new() { Name="Tenis Urban", Description="Tenis estilo urbano", Price=180000, Stock=12, Category="Calzado", ImageUrl="https://example.com/tenis-urban.png", IsActive=true, CreatedAt=now },
-            new() { Name="Camisa Formal", Description="Camisa manga larga", Price=120000, Stock=14, Category="Camisas", ImageUrl="https://example.com/camisa-formal.png", IsActive=true, CreatedAt=now },
-            new() { Name="Polo Azul", Description="Polo casual", Price=65000, Stock=22, Category="Polos", ImageUrl="https://example.com/polo-azul.png", IsActive=true, CreatedAt=now },
-            new() { Name="Short Deportivo", Description="Short liviano", Price=55000, Stock=19, Category="Deportiva", ImageUrl="https://example.com/short-deportivo.png", IsActive=true, CreatedAt=now }
+            new() { Name="Camiseta Negra", Description="Algodón premium", Price=45000, Stock=20, CategoryId=catCamisetas.Id, ImageUrl="https://example.com/camiseta-negra.png", IsActive=true, CreatedAt=now },
+            new() { Name="Camiseta Blanca", Description="Básica unisex", Price=40000, Stock=25, CategoryId=catCamisetas.Id, ImageUrl="https://example.com/camiseta-blanca.png", IsActive=true, CreatedAt=now },
+            new() { Name="Jean Slim", Description="Jean azul slim fit", Price=110000, Stock=15, CategoryId=catPantalones.Id, ImageUrl="https://example.com/jean-slim.png", IsActive=true, CreatedAt=now },
+            new() { Name="Chaqueta Denim", Description="Chaqueta clásica", Price=160000, Stock=10, CategoryId=catChaquetas.Id, ImageUrl="https://example.com/chaqueta-denim.png", IsActive=true, CreatedAt=now },
+            new() { Name="Hoodie Gris", Description="Buzo con capota", Price=95000, Stock=18, CategoryId=catBuzos.Id, ImageUrl="https://example.com/hoodie-gris.png", IsActive=true, CreatedAt=now },
+            new() { Name="Gorra Negra", Description="Gorra ajustable", Price=35000, Stock=30, CategoryId=catAccesorios.Id, ImageUrl="https://example.com/gorra-negra.png", IsActive=true, CreatedAt=now },
+            new() { Name="Tenis Urban", Description="Tenis estilo urbano", Price=180000, Stock=12, CategoryId=catCalzado.Id, ImageUrl="https://example.com/tenis-urban.png", IsActive=true, CreatedAt=now },
+            new() { Name="Camisa Formal", Description="Camisa manga larga", Price=120000, Stock=14, CategoryId=catCamisas.Id, ImageUrl="https://example.com/camisa-formal.png", IsActive=true, CreatedAt=now },
+            new() { Name="Polo Azul", Description="Polo casual", Price=65000, Stock=22, CategoryId=catPolos.Id, ImageUrl="https://example.com/polo-azul.png", IsActive=true, CreatedAt=now },
+            new() { Name="Short Deportivo", Description="Short liviano", Price=55000, Stock=19, CategoryId=catDeportiva.Id, ImageUrl="https://example.com/short-deportivo.png", IsActive=true, CreatedAt=now }
         };
 
         _context.Products.AddRange(products);

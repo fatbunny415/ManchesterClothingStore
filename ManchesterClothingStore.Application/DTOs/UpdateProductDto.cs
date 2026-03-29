@@ -16,8 +16,8 @@ public class UpdateProductDto
     [Range(0, 150)]
     public int Stock { get; set; }
 
-    [Required, MinLength(3)]
-    public string Category { get; set; } = string.Empty;
+    [Required]
+    public Guid CategoryId { get; set; }
 
     [Required]
     public string ImageUrl { get; set; } = string.Empty;
