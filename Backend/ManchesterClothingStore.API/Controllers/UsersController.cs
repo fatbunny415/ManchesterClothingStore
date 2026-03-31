@@ -93,4 +93,82 @@ public class UsersController : ControllerBase
 
         return Ok("Contraseña actualizada correctamente.");
     }
+
+    // =========================
+    // GET: api/users
+    // (Admin) Obtener lista de usuarios
+    // =========================
+    [HttpGet]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetUsers()
+    {
+        var users = await _context.Users
+            .Select(u => new
+            {
+                u.Id,
+                u.FullName,
+                u.Email,
+                RoleLabel = u.Role.ToString(),
+                RoleId = (int)u.Role,
+                u.CreatedAt
+            })
+            .OrderByDescending(u => u.CreatedAt)
+            .ToListAsync();
+
+        return Ok(users);
+    }
+
+    // =========================
+    // PUT: api/users/{id}/role
+    // (Admin) Actualizar rol (Admin/Vendedor/Cliente)
+    // =========================
+    [HttpPut("{id}/role")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateRole(Guid id, [FromBody] UpdateRoleDto dto)
+    {
+        var currentUserId = GetUserId();
+
+        if (id == currentUserId)
+            return BadRequest("No puedes cambiar tu propio rol.");
+
+        var user = await _context.Users.FindAsync(id);
+        if (user == null)
+            return NotFound("Usuario no encontrado.");
+
+        if (!Enum.IsDefined(typeof(ManchesterClothingStore.Domain.Enums.UserRole), dto.Role))
+            return BadRequest("El rol especificado no es válido.");
+
+        user.Role = (ManchesterClothingStore.Domain.Enums.UserRole)dto.Role;
+
+        _context.Users.Update(user);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Rol actualizado correctamente." });
+    }
+
+    // =========================
+    // DELETE: api/users/{id}
+    // (Admin) Eliminar usuario con restricciones
+    // =========================
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteUser(Guid id)
+    {
+        var currentUserId = GetUserId();
+
+        if (id == currentUserId)
+            return BadRequest("No puedes eliminar tu propia cuenta.");
+
+        var user = await _context.Users.FindAsync(id);
+        if (user == null)
+            return NotFound("Usuario no encontrado.");
+
+        if (user.Role == ManchesterClothingStore.Domain.Enums.UserRole.Admin)
+            return BadRequest("Seguridad: Un Administrador no puede eliminar a otro Administrador.");
+
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Usuario eliminado exitosamente." });
+    }
 }

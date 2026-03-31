@@ -90,3 +90,187 @@
 .logo-dot {
   animation: goldPulse 3s ease-in-out infinite;
 }
+
+/* ============================
+   ADMIN PANEL STYLES
+   ============================ */
+
+/* Layout */
+.admin-layout {
+  @apply min-h-screen bg-[#0a0a0a] text-manchester-white flex;
+}
+
+.admin-layout__main {
+  @apply flex flex-col flex-1 transition-all duration-300 ease-in-out;
+  margin-left: 260px;
+}
+
+.admin-layout__main--collapsed {
+  margin-left: 72px;
+}
+
+.admin-layout__content {
+  @apply flex-1 p-6 lg:p-8;
+}
+
+/* Sidebar */
+.admin-sidebar {
+  @apply fixed top-0 left-0 h-screen bg-[#0f0f0f] border-r border-white/[0.04] flex flex-col z-50;
+  width: 260px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-sidebar--collapsed {
+  width: 72px;
+}
+
+.admin-sidebar__logo {
+  @apply h-16 flex items-center justify-center border-b border-white/[0.04] px-5;
+}
+
+.admin-sidebar__nav {
+  @apply flex-1 overflow-y-auto px-3 py-4;
+}
+
+.admin-sidebar__link {
+  @apply relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/40 transition-all duration-200 hover:text-white/80 hover:bg-white/[0.03];
+}
+
+.admin-sidebar__link--active {
+  @apply text-manchester-gold bg-manchester-gold/[0.06];
+}
+
+.admin-sidebar__bottom {
+  @apply px-3 py-4 border-t border-white/[0.04] space-y-2;
+}
+
+.admin-sidebar__toggle {
+  @apply w-full flex items-center justify-center p-2 rounded-xl text-white/20 hover:text-white/50 hover:bg-white/[0.03] transition-all duration-200;
+}
+
+/* Navbar */
+.admin-navbar {
+  @apply h-16 flex items-center justify-between px-6 lg:px-8 border-b border-white/[0.04] bg-[#0a0a0a]/80 backdrop-blur-sm sticky top-0 z-40;
+}
+
+/* Admin Cards */
+.admin-card {
+  @apply bg-[#111111] border border-white/[0.04] rounded-2xl p-6 transition-all duration-300 hover:border-white/[0.08];
+}
+
+.admin-card--gold {
+  @apply bg-[#111111] border border-manchester-gold/10 rounded-2xl p-6 transition-all duration-300 hover:border-manchester-gold/25;
+}
+
+/* Admin Tables */
+.admin-table {
+  @apply w-full;
+}
+
+.admin-table thead th {
+  @apply text-[10px] font-bold tracking-[0.15em] uppercase text-white/30 pb-3 text-left border-b border-white/[0.04];
+}
+
+.admin-table tbody td {
+  @apply py-3.5 text-sm text-white/70 border-b border-white/[0.02];
+}
+
+.admin-table tbody tr {
+  @apply transition-colors hover:bg-white/[0.02];
+}
+
+/* Admin Buttons */
+.admin-btn {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed;
+}
+
+.admin-btn--primary {
+  @apply bg-manchester-gold text-[#0a0a0a] hover:bg-manchester-goldLight shadow-lg shadow-manchester-gold/10;
+}
+
+.admin-btn--secondary {
+  @apply bg-white/[0.05] text-white/70 border border-white/[0.08] hover:bg-white/[0.08] hover:text-white;
+}
+
+.admin-btn--danger {
+  @apply bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20;
+}
+
+.admin-btn--ghost {
+  @apply text-white/40 hover:text-white/70 hover:bg-white/[0.04];
+}
+
+.admin-btn--sm {
+  @apply px-3 py-1.5 text-xs rounded-lg;
+}
+
+/* Admin Input */
+.admin-input {
+  @apply w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/20 outline-none transition-all duration-200 focus:border-manchester-gold/50 focus:ring-1 focus:ring-manchester-gold/20;
+}
+
+.admin-select {
+  @apply w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-manchester-gold/50 focus:ring-1 focus:ring-manchester-gold/20 appearance-none;
+}
+
+.admin-textarea {
+  @apply w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/20 outline-none transition-all duration-200 focus:border-manchester-gold/50 focus:ring-1 focus:ring-manchester-gold/20 resize-none;
+}
+
+.admin-label {
+  @apply block text-[11px] font-bold tracking-[0.12em] uppercase text-white/40 mb-1.5;
+}
+
+/* Admin Badge */
+.admin-badge {
+  @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase;
+}
+
+.admin-badge--yellow {
+  @apply bg-yellow-500/10 text-yellow-400 border border-yellow-500/20;
+}
+
+.admin-badge--blue {
+  @apply bg-blue-500/10 text-blue-400 border border-blue-500/20;
+}
+
+.admin-badge--green {
+  @apply bg-emerald-500/10 text-emerald-400 border border-emerald-500/20;
+}
+
+.admin-badge--red {
+  @apply bg-red-500/10 text-red-400 border border-red-500/20;
+}
+
+/* Responsive: mobile sidebar overlay */
+@media (max-width: 1023px) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .admin-sidebar:not(.admin-sidebar--collapsed) {
+    transform: translateX(0);
+  }
+
+  .admin-layout__main,
+  .admin-layout__main--collapsed {
+    margin-left: 0;
+  }
+}
+
+/* Admin page animations */
+@keyframes adminFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-page-enter {
+  animation: adminFadeIn 0.3s ease-out;
+}
+
