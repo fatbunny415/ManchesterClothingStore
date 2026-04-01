@@ -44,6 +44,9 @@ public class CartsController : ControllerBase
     [HttpPost("items")]
     public async Task<IActionResult> AddItem(AddCartItemDto dto)
     {
+        if (dto.Quantity <= 0)
+            return BadRequest("La cantidad debe ser mayor a cero.");
+
         var userId = GetUserId();
         var cart = await _context.Carts
             .Include(c => c.Items)
@@ -58,10 +61,22 @@ public class CartsController : ControllerBase
         var product = await _context.Products.FindAsync(dto.ProductId);
         if (product == null) return NotFound("Producto no encontrado.");
 
+        if (!product.IsActive)
+            return BadRequest("El producto no está disponible.");
+
+        if (product.Stock < dto.Quantity)
+            return BadRequest("No hay stock suficiente.");
+
         var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == dto.ProductId);
         if (existingItem != null)
         {
-            existingItem.Quantity += dto.Quantity;
+            var newQuantity = existingItem.Quantity + dto.Quantity;
+
+            if (product.Stock < newQuantity)
+                return BadRequest("No hay stock suficiente para aumentar la cantidad.");
+
+            existingItem.Quantity = newQuantity;
+            existingItem.UnitPrice = product.Price;
         }
         else
         {
@@ -83,6 +98,7 @@ public class CartsController : ControllerBase
     {
         var item = await _context.CartItems
             .Include(i => i.Cart)
+            .Include(i => i.Product)
             .FirstOrDefaultAsync(i => i.Id == itemId && i.Cart.UserId == GetUserId());
 
         if (item == null) return NotFound("Item no encontrado en tu carrito.");
@@ -93,7 +109,11 @@ public class CartsController : ControllerBase
         }
         else
         {
+            if (item.Product.Stock < dto.Quantity)
+                return BadRequest("No hay stock suficiente.");
+
             item.Quantity = dto.Quantity;
+            item.UnitPrice = item.Product.Price;
         }
 
         await _context.SaveChangesAsync();

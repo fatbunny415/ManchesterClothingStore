@@ -12,6 +12,7 @@ using ManchesterClothingStore.Infrastructure.Persistence;
 using ManchesterClothingStore.Domain.Entities;
 using ManchesterClothingStore.Application.DTOs;
 using ManchesterClothingStore.API.Services;
+using ManchesterClothingStore.API.Helpers;
 
 namespace ManchesterClothingStore.API.Controllers;
 
@@ -22,12 +23,14 @@ public class AuthController : ControllerBase
     private readonly AppDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly RecaptchaService _recaptchaService;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(AppDbContext context, IConfiguration configuration, RecaptchaService recaptchaService)
+    public AuthController(AppDbContext context, IConfiguration configuration, RecaptchaService recaptchaService, ILogger<AuthController> logger)
     {
         _context = context;
         _configuration = configuration;
         _recaptchaService = recaptchaService;
+        _logger = logger;
     }
 
     // =========================
@@ -42,17 +45,9 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "Verificación reCAPTCHA fallida. Intenta de nuevo." });
 
         // Server-side password validation
-        if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 8)
-            return BadRequest(new { message = "La contraseña debe tener al menos 8 caracteres." });
-
-        if (!Regex.IsMatch(dto.Password, @"[A-Z]"))
-            return BadRequest(new { message = "La contraseña debe contener al menos una letra mayúscula." });
-
-        if (!Regex.IsMatch(dto.Password, @"\d"))
-            return BadRequest(new { message = "La contraseña debe contener al menos un número." });
-
-        if (!Regex.IsMatch(dto.Password, @"[@$!%*?&#^()]"))
-            return BadRequest(new { message = "La contraseña debe contener al menos un carácter especial (@$!%*?&#^())." });
+        var passwordError = PasswordValidator.Validate(dto.Password);
+        if (passwordError != null)
+            return BadRequest(new { message = passwordError });
 
         if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
             return BadRequest(new { message = "El usuario ya existe." });
@@ -108,7 +103,10 @@ public class AuthController : ControllerBase
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
 
         if (user == null)
-            return NotFound(new { message = "No existe un usuario con ese correo." });
+        {
+            // Para prevenir ataques de enumeración de correos, devolvemos siempre éxito
+            return Ok(new { message = "Si el correo corresponde a una cuenta válida, se ha enviado un enlace de recuperación." });
+        }
 
         var resetToken = Guid.NewGuid().ToString("N");
 
@@ -117,11 +115,14 @@ public class AuthController : ControllerBase
 
         await _context.SaveChangesAsync();
 
+        // 🟢 TEMPORAL PARA DESARROLLO: Loggear el token en consola en vez de enviarlo por email
+        _logger.LogInformation("==================================================");
+        _logger.LogInformation("🚀 RECOVERY TOKEN FOR {Email}: {Token}", dto.Email, resetToken);
+        _logger.LogInformation("==================================================");
+
         return Ok(new
         {
-            message = "Token de recuperación generado correctamente.",
-            resetToken,
-            expiresAt = user.PasswordResetTokenExpiresAt
+            message = "Si el correo corresponde a una cuenta válida, se ha enviado un enlace de recuperación."
         });
     }
 
@@ -147,6 +148,10 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new { message = "El token ha expirado." });
         }
+
+        var passwordError = PasswordValidator.Validate(dto.NewPassword);
+        if (passwordError != null)
+            return BadRequest(new { message = passwordError });
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
         user.PasswordResetToken = null;

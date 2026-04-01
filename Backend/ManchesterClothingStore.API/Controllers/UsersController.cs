@@ -6,6 +6,7 @@ using System.Security.Claims;
 
 using ManchesterClothingStore.Application.DTOs;
 using ManchesterClothingStore.Infrastructure.Persistence;
+using ManchesterClothingStore.API.Helpers;
 
 namespace ManchesterClothingStore.API.Controllers;
 
@@ -74,8 +75,9 @@ public class UsersController : ControllerBase
         if (string.IsNullOrWhiteSpace(dto.NewPassword))
             return BadRequest("La nueva contraseña es obligatoria.");
 
-        if (dto.NewPassword.Length < 8)
-            return BadRequest("La nueva contraseña debe tener al menos 8 caracteres.");
+        var passwordError = PasswordValidator.Validate(dto.NewPassword);
+        if (passwordError != null)
+            return BadRequest(passwordError);
 
         var userId = GetUserId();
 
