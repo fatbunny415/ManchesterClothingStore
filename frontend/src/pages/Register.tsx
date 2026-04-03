@@ -62,7 +62,8 @@ const Register = () => {
 
     grecaptcha.ready(async () => {
       try {
-        const token = await grecaptcha.execute('6LeEDpQsAAAAAOmtwQIdENxdys5Gyt0FR97sWK-E', {action: 'register'});
+        const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+        const token = await grecaptcha.execute(siteKey, {action: 'register'});
         await authService.register(cleanFullName, cleanEmail, password, token);
         setSuccess(true);
         setTimeout(() => navigate('/login'), 2000);

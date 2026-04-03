@@ -69,9 +69,9 @@ export enum OrderStatusEnum {
 }
 
 export const ORDER_STATUS_LABELS: Record<string, string> = {
-  Pending: 'Pendiente',
-  Processing: 'En proceso',
-  Completed: 'Completado',
+  Pending: 'En proceso',
+  Processing: 'En despacho',
+  Completed: 'Enviado',
   Cancelled: 'Cancelado',
 };
 
@@ -94,6 +94,7 @@ export interface OrderItem {
   id?: string;
   productId: string;
   productName?: string;
+  productImageUrl?: string;
   product?: Product;
   quantity: number;
   unitPrice: number;
@@ -125,6 +126,7 @@ export interface AdminOrder {
 export interface AdminOrderItem {
   productId: string;
   productName: string;
+  productImageUrl?: string;
   quantity: number;
   unitPrice: number;
   lineTotal: number;

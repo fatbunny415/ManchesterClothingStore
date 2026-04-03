@@ -3,6 +3,7 @@ import { orderService } from '../api/services';
 import { Order, OrderItem, getOrderStatusLabel } from '../types';
 import { Loader2, Package, Calendar, CreditCard, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatCOP } from '../utils/formatCurrency';
 
 const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -77,7 +78,7 @@ const Orders = () => {
                       <p className="text-[10px] text-white/40 font-bold tracking-widest uppercase mb-1 flex items-center gap-1">
                         <CreditCard className="w-3 h-3" /> TOTAL
                       </p>
-                      <p className="text-sm font-bold text-manchester-gold">${order.totalAmount.toLocaleString()}</p>
+                      <p className="text-sm font-bold text-manchester-gold">{formatCOP(order.totalAmount)}</p>
                     </div>
                     <div className="hidden md:block text-right">
                       <span className="inline-block px-3 py-1 rounded-full bg-white/5 text-[9px] font-bold tracking-widest text-white/60 border border-white/10 uppercase">
@@ -91,15 +92,21 @@ const Orders = () => {
                   {order.items.map((item: OrderItem, idx: number) => (
                     <div key={item.productId + '-' + idx} className="flex items-center justify-between group/item">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-lg bg-white/5 overflow-hidden">
-                          <div className="w-full h-full flex items-center justify-center text-white/10 italic text-[8px]">IMG</div>
+                        <div className="w-10 h-10 rounded-lg bg-white/5 overflow-hidden border border-white/10">
+                          {item.productImageUrl ? (
+                            <img src={item.productImageUrl} alt={item.productName || 'Producto'} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-white/10">
+                              <Package className="w-4 h-4" />
+                            </div>
+                          )}
                         </div>
                         <div>
                           <p className="text-xs font-bold tracking-wide uppercase">{item.productName || 'Producto'}</p>
-                          <p className="text-[10px] text-white/40 tracking-widest">{item.quantity} x ${item.unitPrice.toLocaleString()}</p>
+                          <p className="text-[10px] text-white/40 tracking-widest">{item.quantity} x {formatCOP(item.unitPrice)}</p>
                         </div>
                       </div>
-                      <p className="text-xs font-mono text-white/60">${(item.quantity * item.unitPrice).toLocaleString()}</p>
+                      <p className="text-xs font-mono text-white/60">{formatCOP(item.quantity * item.unitPrice)}</p>
                     </div>
                   ))}
                 </div>

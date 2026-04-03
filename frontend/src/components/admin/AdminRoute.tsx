@@ -11,8 +11,8 @@ const AdminRoute: React.FC = () => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Authenticated but not Admin → redirect to home
-  if (user.role !== 'Admin') {
+  // Authenticated but not Admin/Vendedor → redirect to home
+  if (user.role !== 'Admin' && user.role !== 'Vendedor') {
     return <Navigate to="/" replace />;
   }
 

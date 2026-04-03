@@ -3,6 +3,7 @@ import { ShoppingBag, User, LogOut, Menu, X, Package, Shield } from 'lucide-reac
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { useCartStore } from '../store/useCartStore';
+import api from '../api/axios';
 import Cart from './Cart';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -13,7 +14,12 @@ const Navbar = () => {
   const totalItems = useCartStore(state => state.totalItems());
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (e) {
+      console.error(e);
+    }
     logout();
     navigate('/');
   };
@@ -56,7 +62,7 @@ const Navbar = () => {
 
               {isAuthenticated ? (
                 <div className="flex items-center space-x-3 border-l border-white/10 pl-5">
-                  {user?.role === 'Admin' && (
+                  {(user?.role === 'Admin' || user?.role === 'Vendedor') && (
                     <Link 
                       to="/admin" 
                       title="Ir al Panel" 
@@ -121,7 +127,7 @@ const Navbar = () => {
                 <hr className="border-white/5" />
                 {isAuthenticated ? (
                   <div className="flex flex-col gap-5">
-                    {user?.role === 'Admin' && (
+                    {(user?.role === 'Admin' || user?.role === 'Vendedor') && (
                       <Link to="/admin" className="text-manchester-gold font-bold uppercase tracking-widest text-sm flex items-center gap-2" onClick={() => setIsOpen(false)}>
                         <Shield className="w-4 h-4" /> Panel de Administración
                       </Link>

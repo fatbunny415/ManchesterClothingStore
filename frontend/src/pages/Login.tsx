@@ -66,7 +66,8 @@ const Login = () => {
     // Google reCAPTCHA v3 invocation
     grecaptcha.ready(async () => {
       try {
-        const token = await grecaptcha.execute('6LeEDpQsAAAAAOmtwQIdENxdys5Gyt0FR97sWK-E', {action: 'login'});
+        const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+        const token = await grecaptcha.execute(siteKey, {action: 'login'});
         const response: any = await authService.login(cleanEmail, password, token);
 
         // Éxito: limpiar intentos

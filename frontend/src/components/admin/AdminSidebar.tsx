@@ -12,19 +12,20 @@ import {
   LogOut,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
+import api from '../../api/axios';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const navItems = [
-  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/admin/products', label: 'Productos', icon: Package, end: false },
-  { to: '/admin/orders', label: 'Pedidos', icon: ShoppingCart, end: false },
-  { to: '/admin/users', label: 'Usuarios', icon: Users, end: false },
-  { to: '/admin/profile', label: 'Mi Perfil', icon: UserCircle, end: false },
+  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true, adminOnly: false },
+  { to: '/admin/products', label: 'Productos', icon: Package, end: false, adminOnly: false },
+  { to: '/admin/orders', label: 'Pedidos', icon: ShoppingCart, end: false, adminOnly: false },
+  { to: '/admin/users', label: 'Usuarios', icon: Users, end: false, adminOnly: true },
+  { to: '/admin/profile', label: 'Mi Perfil', icon: UserCircle, end: false, adminOnly: false },
 ];
 
 const AdminSidebar: React.FC = () => {
   const { sidebarCollapsed, toggleSidebar } = useAdminStore();
-  const logout = useAuthStore((s) => s.logout);
+  const { logout, user } = useAuthStore();
   const location = useLocation();
 
   return (
@@ -65,7 +66,7 @@ const AdminSidebar: React.FC = () => {
       {/* Navigation */}
       <nav className="admin-sidebar__nav">
         <div className="space-y-1">
-          {navItems.map((item) => {
+          {navItems.filter(item => !item.adminOnly || user?.role === 'Admin').map((item) => {
             const Icon = item.icon;
             const isActive =
               item.end
@@ -108,7 +109,12 @@ const AdminSidebar: React.FC = () => {
       {/* Bottom section */}
       <div className="admin-sidebar__bottom">
         <button
-          onClick={() => {
+          onClick={async () => {
+            try {
+              await api.post('/auth/logout');
+            } catch (e) {
+              console.error(e);
+            }
             logout();
             window.location.href = '/login';
           }}

@@ -6,8 +6,14 @@ using System.Threading.RateLimiting;
 
 using ManchesterClothingStore.Infrastructure.Persistence;
 using ManchesterClothingStore.API.Services;
+using ManchesterClothingStore.API.Middleware;
+using ManchesterClothingStore.Application.Interfaces;
+using ManchesterClothingStore.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Register Email Service
+builder.Services.AddScoped<IEmailService, DevEmailService>();
 
 // CORS — permitir frontend Vite
 builder.Services.AddCors(options =>
@@ -120,8 +126,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
-// CORS antes de Auth
+// CORS antes de Auth y Excepciones
 app.UseCors("AllowFrontend");
+
+// Middleware global de excepciones (DESPUÉS de CORS para no perder cabeceras)
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // Rate Limiter antes de Auth
 app.UseRateLimiter();

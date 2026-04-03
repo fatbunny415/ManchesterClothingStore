@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { orderService } from '../api/services';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { formatCOP } from '../utils/formatCurrency';
 
 interface CartProps {
   isOpen: boolean;
@@ -124,7 +125,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                             <Plus className="w-3 h-3" />
                           </button>
                         </div>
-                        <span className="font-bold text-sm">${(item.price * item.quantity).toLocaleString()}</span>
+                        <span className="font-bold text-sm">{formatCOP(item.price * item.quantity)}</span>
                       </div>
                     </div>
                   </div>
@@ -147,7 +148,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs text-white/40 font-bold tracking-widest uppercase">
                     <span>Subtotal</span>
-                    <span className="text-white">${totalPrice().toLocaleString()}</span>
+                    <span className="text-white">{formatCOP(totalPrice())}</span>
                   </div>
                   <div className="flex justify-between text-xs text-white/40 font-bold tracking-widest uppercase">
                     <span>Envío</span>
@@ -155,7 +156,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                   </div>
                   <div className="flex justify-between pt-4 text-xl font-bold tracking-tighter">
                     <span>TOTAL</span>
-                    <span className="text-manchester-gold">${totalPrice().toLocaleString()}</span>
+                    <span className="text-manchester-gold">{formatCOP(totalPrice())}</span>
                   </div>
                 </div>
                 

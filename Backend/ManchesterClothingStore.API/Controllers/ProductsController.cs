@@ -149,16 +149,16 @@ public class ProductsController : ControllerBase
 
         var products = new List<Product>
         {
-            new() { Name="Camiseta Negra", Description="Algodón premium", Price=45000, Stock=20, Category="Camisetas", ImageUrl="https://example.com/camiseta-negra.png", IsActive=true, CreatedAt=now },
-            new() { Name="Camiseta Blanca", Description="Básica unisex", Price=40000, Stock=25, Category="Camisetas", ImageUrl="https://example.com/camiseta-blanca.png", IsActive=true, CreatedAt=now },
-            new() { Name="Jean Slim", Description="Jean azul slim fit", Price=110000, Stock=15, Category="Pantalones", ImageUrl="https://example.com/jean-slim.png", IsActive=true, CreatedAt=now },
-            new() { Name="Chaqueta Denim", Description="Chaqueta clásica", Price=160000, Stock=10, Category="Chaquetas", ImageUrl="https://example.com/chaqueta-denim.png", IsActive=true, CreatedAt=now },
-            new() { Name="Hoodie Gris", Description="Buzo con capota", Price=95000, Stock=18, Category="Buzos", ImageUrl="https://example.com/hoodie-gris.png", IsActive=true, CreatedAt=now },
-            new() { Name="Gorra Negra", Description="Gorra ajustable", Price=35000, Stock=30, Category="Accesorios", ImageUrl="https://example.com/gorra-negra.png", IsActive=true, CreatedAt=now },
-            new() { Name="Tenis Urban", Description="Tenis estilo urbano", Price=180000, Stock=12, Category="Calzado", ImageUrl="https://example.com/tenis-urban.png", IsActive=true, CreatedAt=now },
-            new() { Name="Camisa Formal", Description="Camisa manga larga", Price=120000, Stock=14, Category="Camisas", ImageUrl="https://example.com/camisa-formal.png", IsActive=true, CreatedAt=now },
-            new() { Name="Polo Azul", Description="Polo casual", Price=65000, Stock=22, Category="Polos", ImageUrl="https://example.com/polo-azul.png", IsActive=true, CreatedAt=now },
-            new() { Name="Short Deportivo", Description="Short liviano", Price=55000, Stock=19, Category="Deportiva", ImageUrl="https://example.com/short-deportivo.png", IsActive=true, CreatedAt=now }
+            new() { Name="Camiseta Negra", Description="Algodón premium", Price=45000, Stock=20, Category="Camisetas", ImageUrl="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&q=80", Sizes="S,M,L,XL", Colors="Negro", IsActive=true, CreatedAt=now },
+            new() { Name="Camiseta Blanca", Description="Básica unisex", Price=40000, Stock=25, Category="Camisetas", ImageUrl="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80", Sizes="XS,S,M,L", Colors="Blanco", IsActive=true, CreatedAt=now },
+            new() { Name="Jean Slim", Description="Jean azul slim fit", Price=110000, Stock=15, Category="Pantalones", ImageUrl="https://images.unsplash.com/photo-1542272604-780c8d197607?w=800&q=80", Sizes="S,M,L", Colors="Azul", IsActive=true, CreatedAt=now },
+            new() { Name="Chaqueta Denim", Description="Chaqueta clásica experta", Price=160000, Stock=10, Category="Chaquetas", ImageUrl="https://images.unsplash.com/photo-1576871337622-98d48d1cf531?w=800&q=80", Sizes="M,L,XL", Colors="Azul", IsActive=true, CreatedAt=now },
+            new() { Name="Hoodie Gris", Description="Buzo con capota", Price=95000, Stock=18, Category="Buzos", ImageUrl="https://images.unsplash.com/photo-1556821840-083b4822ff95?w=800&q=80", Sizes="S,M,L,XL", Colors="Gris", IsActive=true, CreatedAt=now },
+            new() { Name="Gorra Negra", Description="Gorra ajustable premium", Price=35000, Stock=30, Category="Gorras", ImageUrl="https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=800&q=80", Sizes="M,L", Colors="Negro", IsActive=true, CreatedAt=now },
+            new() { Name="Sudadera Negra", Description="Sudadera básica deportiva", Price=85000, Stock=12, Category="Sudaderas", ImageUrl="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=80", Sizes="S,M,L", Colors="Negro", IsActive=true, CreatedAt=now },
+            new() { Name="Camisa Formal", Description="Camisa manga larga", Price=120000, Stock=14, Category="Camisas", ImageUrl="https://images.unsplash.com/photo-1593998066526-65fcab3021a2?w=800&q=80", Sizes="M,L,XL", Colors="Blanco", IsActive=true, CreatedAt=now },
+            new() { Name="Polo Azul", Description="Polo casual texturizado", Price=65000, Stock=22, Category="Polos", ImageUrl="https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&q=80", Sizes="S,M,L", Colors="Azul", IsActive=true, CreatedAt=now },
+            new() { Name="Short Deportivo", Description="Short liviano transpirable", Price=55000, Stock=19, Category="Deportiva", ImageUrl="https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=800&q=80", Sizes="S,M,L,XL", Colors="Negro", IsActive=true, CreatedAt=now }
         };
 
         _context.Products.AddRange(products);

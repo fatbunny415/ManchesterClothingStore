@@ -5,13 +5,16 @@ using Microsoft.IdentityModel.Tokens;
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
 using ManchesterClothingStore.Infrastructure.Persistence;
 using ManchesterClothingStore.Domain.Entities;
 using ManchesterClothingStore.Application.DTOs;
+using ManchesterClothingStore.Application.Interfaces;
 using ManchesterClothingStore.API.Services;
+using ManchesterClothingStore.API.Helpers;
 
 namespace ManchesterClothingStore.API.Controllers;
 
@@ -22,12 +25,16 @@ public class AuthController : ControllerBase
     private readonly AppDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly RecaptchaService _recaptchaService;
+    private readonly ILogger<AuthController> _logger;
+    private readonly IEmailService _emailService;
 
-    public AuthController(AppDbContext context, IConfiguration configuration, RecaptchaService recaptchaService)
+    public AuthController(AppDbContext context, IConfiguration configuration, RecaptchaService recaptchaService, ILogger<AuthController> logger, IEmailService emailService)
     {
         _context = context;
         _configuration = configuration;
         _recaptchaService = recaptchaService;
+        _logger = logger;
+        _emailService = emailService;
     }
 
     // =========================
@@ -42,17 +49,9 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "Verificación reCAPTCHA fallida. Intenta de nuevo." });
 
         // Server-side password validation
-        if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 8)
-            return BadRequest(new { message = "La contraseña debe tener al menos 8 caracteres." });
-
-        if (!Regex.IsMatch(dto.Password, @"[A-Z]"))
-            return BadRequest(new { message = "La contraseña debe contener al menos una letra mayúscula." });
-
-        if (!Regex.IsMatch(dto.Password, @"\d"))
-            return BadRequest(new { message = "La contraseña debe contener al menos un número." });
-
-        if (!Regex.IsMatch(dto.Password, @"[@$!%*?&#^()]"))
-            return BadRequest(new { message = "La contraseña debe contener al menos un carácter especial (@$!%*?&#^())." });
+        var passwordError = PasswordValidator.Validate(dto.Password);
+        if (passwordError != null)
+            return BadRequest(new { message = passwordError });
 
         if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
             return BadRequest(new { message = "El usuario ya existe." });
@@ -89,6 +88,9 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Credenciales inválidas." });
 
         var token = GenerateJwtToken(user);
+        
+        AttachRefreshToken(user);
+        await _context.SaveChangesAsync();
 
         return Ok(new
         {
@@ -100,6 +102,57 @@ public class AuthController : ControllerBase
     }
 
     // =========================
+    // REFRESH TOKEN
+    // =========================
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken()
+    {
+        var refreshToken = Request.Cookies["refreshToken"];
+        if (string.IsNullOrEmpty(refreshToken))
+            return Unauthorized(new { message = "Refresh token no encontrado." });
+
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+
+        if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            return Unauthorized(new { message = "Refresh token inválido o expirado." });
+
+        // Rotar Refresh Token por seguridad
+        var newJwt = GenerateJwtToken(user);
+        AttachRefreshToken(user);
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            token = newJwt,
+            role = user.Role.ToString(),
+            email = user.Email,
+            fullName = user.FullName
+        });
+    }
+
+    // =========================
+    // LOGOUT
+    // =========================
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        var refreshToken = Request.Cookies["refreshToken"];
+        if (!string.IsNullOrEmpty(refreshToken))
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+            if (user != null)
+            {
+                user.RefreshToken = null;
+                user.RefreshTokenExpiryTime = null;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        Response.Cookies.Delete("refreshToken", new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Lax });
+        return Ok(new { message = "Sesión cerrada correctamente." });
+    }
+
+    // =========================
     // FORGOT PASSWORD
     // =========================
     [HttpPost("forgot-password")]
@@ -108,21 +161,50 @@ public class AuthController : ControllerBase
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
 
         if (user == null)
-            return NotFound(new { message = "No existe un usuario con ese correo." });
+        {
+            // Para prevenir ataques de enumeración de correos, devolvemos siempre éxito
+            return Ok(new { message = "Si el correo corresponde a una cuenta válida, se ha enviado un enlace de recuperación." });
+        }
 
-        var resetToken = Guid.NewGuid().ToString("N");
+        var resetToken = new Random().Next(100000, 999999).ToString();
 
         user.PasswordResetToken = resetToken;
         user.PasswordResetTokenExpiresAt = DateTime.UtcNow.AddMinutes(15);
 
         await _context.SaveChangesAsync();
 
+        await _emailService.SendPasswordResetEmailAsync(user.Email, resetToken);
+
         return Ok(new
         {
-            message = "Token de recuperación generado correctamente.",
-            resetToken,
-            expiresAt = user.PasswordResetTokenExpiresAt
+            message = "Si el correo corresponde a una cuenta válida, se ha enviado un enlace de recuperación."
         });
+    }
+
+    // =========================
+    // VERIFY RECOVERY CODE
+    // =========================
+    [HttpPost("verify-code")]
+    public async Task<IActionResult> VerifyCode(VerifyCodeDto dto)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+
+        if (user == null)
+            return NotFound(new { message = "Usuario no encontrado." });
+
+        if (string.IsNullOrWhiteSpace(user.PasswordResetToken) ||
+            user.PasswordResetToken != dto.Token)
+        {
+            return BadRequest(new { message = "Código de recuperación inválido o expirado." });
+        }
+
+        if (!user.PasswordResetTokenExpiresAt.HasValue ||
+            user.PasswordResetTokenExpiresAt.Value < DateTime.UtcNow)
+        {
+            return BadRequest(new { message = "El código ha expirado." });
+        }
+
+        return Ok(new { message = "Código verificado correctamente." });
     }
 
     // =========================
@@ -147,6 +229,10 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new { message = "El token ha expirado." });
         }
+
+        var passwordError = PasswordValidator.Validate(dto.NewPassword);
+        if (passwordError != null)
+            return BadRequest(new { message = passwordError });
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
         user.PasswordResetToken = null;
@@ -183,10 +269,28 @@ public class AuthController : ControllerBase
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(2),
+            expires: DateTime.UtcNow.AddMinutes(15),
             signingCredentials: credentials
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private void AttachRefreshToken(User user)
+    {
+        var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+        
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Expires = user.RefreshTokenExpiryTime,
+            Secure = false, // false porque estamos en HTTP (localhost). En Prod cambiar a true.
+            SameSite = SameSiteMode.Lax // Lax permite el envío en localhost entre puertos
+        };
+
+        Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
     }
 }
