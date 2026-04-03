@@ -11,6 +11,21 @@ export const authService = {
     const { data } = await api.post<{ message: string }>('/auth/register', { fullName, email, password, recaptchaToken });
     return data;
   },
+
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const { data } = await api.post<{ message: string }>('/auth/forgot-password', { email });
+    return data;
+  },
+
+  async verifyResetCode(email: string, token: string): Promise<{ message: string }> {
+    const { data } = await api.post<{ message: string }>('/auth/verify-code', { email, token });
+    return data;
+  },
+
+  async resetPassword(email: string, token: string, newPassword: string): Promise<{ message: string }> {
+    const { data } = await api.post<{ message: string }>('/auth/reset-password', { email, token, newPassword });
+    return data;
+  },
 };
 
 export const productService = {

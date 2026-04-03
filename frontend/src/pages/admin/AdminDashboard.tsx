@@ -6,6 +6,7 @@ import { AdminTable } from '../../components/admin/ui/AdminTable';
 import { Package, ShoppingCart, DollarSign, AlertTriangle, ExternalLink } from 'lucide-react';
 import { adminProductService, adminOrderService } from '../../api/adminServices';
 import type { AdminOrder, Product } from '../../types';
+import { formatCOP } from '../../utils/formatCurrency';
 
 interface DashboardData {
   totalRevenue: number;
@@ -69,7 +70,7 @@ const AdminDashboard: React.FC = () => {
     },
     { 
       header: 'Total', 
-      accessor: (item: AdminOrder) => <span className="text-manchester-gold font-bold">${item.totalAmount.toFixed(2)}</span>
+      accessor: (item: AdminOrder) => <span className="text-manchester-gold font-bold">{formatCOP(item.totalAmount)}</span>
     },
     { 
       header: 'Estado', 
@@ -120,7 +121,7 @@ const AdminDashboard: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard 
           label="Ingresos Totales" 
-          value={`$${data.totalRevenue.toFixed(2)}`} 
+          value={formatCOP(data.totalRevenue)} 
           icon={DollarSign} 
           delay={0.1} 
         />

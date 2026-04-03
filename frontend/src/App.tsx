@@ -8,6 +8,8 @@ import Register from './pages/Register';
 import ProductDetail from './pages/ProductDetail';
 import Orders from './pages/Orders';
 import NotFound from './pages/NotFound';
+import PlaceholderPage from './pages/PlaceholderPage';
+import ForgotPassword from './pages/ForgotPassword';
 import { useEffect } from 'react';
 import { useCartStore } from './store/useCartStore';
 import { useAuthStore } from './store/useAuthStore';
@@ -78,6 +80,7 @@ function App() {
                     <Route path="/accesorios" element={<Shop />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/forgot" element={<ForgotPassword />} />
                     <Route path="/product/:id" element={<ProductDetail />} />
                     <Route
                       path="/orders"
@@ -87,6 +90,12 @@ function App() {
                         </ProtectedRoute>
                       }
                     />
+                    {/* Placeholder pages from Footer */}
+                    <Route path="/soporte" element={<PlaceholderPage />} />
+                    <Route path="/envios" element={<PlaceholderPage />} />
+                    <Route path="/tallas" element={<PlaceholderPage />} />
+                    <Route path="/contacto" element={<PlaceholderPage />} />
+                    
                     {/* 404 Not Found Catch-All Route */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>

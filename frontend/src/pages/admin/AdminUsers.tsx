@@ -5,6 +5,7 @@ import AdminModal from '../../components/admin/ui/AdminModal';
 import { AdminFormField } from '../../components/admin/ui/AdminFormField';
 import ConfirmDialog from '../../components/admin/ui/ConfirmDialog';
 import { Shield, ShieldAlert, Edit2, Trash2, Loader2, Users } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const AdminUsers: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -55,7 +56,7 @@ const AdminUsers: React.FC = () => {
       await loadUsers();
     } catch (err: any) {
       const msg = err.response?.data || "Hubo un error al actualizar el rol.";
-      alert(typeof msg === 'string' ? msg : "Error desconocido");
+      toast.error(typeof msg === 'string' ? msg : "Error desconocido");
     } finally {
       setSaving(false);
     }
@@ -73,7 +74,7 @@ const AdminUsers: React.FC = () => {
       await loadUsers();
     } catch (err: any) {
       const msg = err.response?.data || "No se pudo eliminar el usuario.";
-      alert(typeof msg === 'string' ? msg : "La cuenta podría pertenecer al mismo administrador activo u otro Administrador en el sistema, lo cual está bloqueado.");
+      toast.error(typeof msg === 'string' ? msg : "La cuenta podría pertenecer al mismo administrador activo u otro Administrador en el sistema, lo cual está bloqueado.");
     } finally {
       setSaving(false);
     }

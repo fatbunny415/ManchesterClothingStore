@@ -6,11 +6,16 @@ import { AdminFormField } from '../../components/admin/ui/AdminFormField';
 import StatusBadge from '../../components/admin/ui/StatusBadge';
 import { Edit2, Loader2, RefreshCw } from 'lucide-react';
 import type { AdminOrder } from '../../types';
+import { useAuthStore } from '../../store/useAuthStore';
+import SellerOrdersKanban from './SellerOrdersKanban';
+import toast from 'react-hot-toast';
+import { formatCOP } from '../../utils/formatCurrency';
 
 const AdminOrders: React.FC = () => {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { user } = useAuthStore();
   
   // Modals
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -52,7 +57,7 @@ const AdminOrders: React.FC = () => {
       await loadOrders();
     } catch (err) {
       console.error("Error cambiando estado:", err);
-      alert("Hubo un error al actualizar el pedido.");
+      toast.error("Hubo un error al actualizar el pedido.");
     } finally {
       setSaving(false);
     }
@@ -81,7 +86,7 @@ const AdminOrders: React.FC = () => {
     },
     { 
       header: 'Total', 
-      accessor: (o: AdminOrder) => <span className="font-bold text-manchester-gold">${o.totalAmount.toFixed(2)}</span>
+      accessor: (o: AdminOrder) => <span className="font-bold text-manchester-gold">{formatCOP(o.totalAmount)}</span>
     },
     { 
       header: 'Estado Actual', 
@@ -119,13 +124,17 @@ const AdminOrders: React.FC = () => {
         </button>
       </div>
 
-      <AdminTable 
-        data={orders} 
-        columns={columns} 
-        keyExtractor={(o) => o.id} 
-        loading={loading}
-        emptyMessage="No hay pedidos registrados en el sistema."
-      />
+      {user?.role === 'Vendedor' ? (
+        <SellerOrdersKanban orders={orders} onOrderUpdated={loadOrders} />
+      ) : (
+        <AdminTable 
+          data={orders} 
+          columns={columns} 
+          keyExtractor={(o) => o.id} 
+          loading={loading}
+          emptyMessage="No hay pedidos registrados en el sistema."
+        />
+      )}
 
       {/* UPDATE STATUS MODAL */}
       <AdminModal 

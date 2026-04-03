@@ -7,8 +7,13 @@ using System.Threading.RateLimiting;
 using ManchesterClothingStore.Infrastructure.Persistence;
 using ManchesterClothingStore.API.Services;
 using ManchesterClothingStore.API.Middleware;
+using ManchesterClothingStore.Application.Interfaces;
+using ManchesterClothingStore.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Register Email Service
+builder.Services.AddScoped<IEmailService, DevEmailService>();
 
 // CORS — permitir frontend Vite
 builder.Services.AddCors(options =>

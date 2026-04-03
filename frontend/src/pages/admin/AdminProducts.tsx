@@ -7,13 +7,15 @@ import { AdminFormField } from '../../components/admin/ui/AdminFormField';
 import StatusBadge from '../../components/admin/ui/StatusBadge';
 import { Plus, Edit2, Trash2, DatabaseZap, ImageIcon, Loader2 } from 'lucide-react';
 import type { Product, CreateProductData } from '../../types';
+import toast from 'react-hot-toast';
+import { formatCOP } from '../../utils/formatCurrency';
 
 const defaultForm: CreateProductData = {
   name: '',
   description: '',
   price: 0,
   stock: 0,
-  category: 'Ropa',
+  category: 'Camisetas',
   imageUrl: '',
   isActive: true,
 };
@@ -65,7 +67,7 @@ const AdminProducts: React.FC = () => {
       description: product.description,
       price: product.price,
       stock: product.stock,
-      category: product.category || 'Ropa',
+      category: product.category || 'Camisetas',
       imageUrl: product.imageUrl || '',
       isActive: product.isActive,
     });
@@ -89,7 +91,7 @@ const AdminProducts: React.FC = () => {
       await loadProducts();
     } catch (err) {
       console.error("Error guardando producto:", err);
-      alert("Hubo un error al guardar o verificar el producto.");
+      toast.error("Hubo un error al guardar o verificar el producto.");
     } finally {
       setSaving(false);
     }
@@ -107,7 +109,7 @@ const AdminProducts: React.FC = () => {
       await loadProducts();
     } catch (err) {
       console.error("Error al eliminar:", err);
-      alert("Error eliminando el producto. Podría estar asociado a una orden.");
+      toast.error("Error eliminando el producto. Podría estar asociado a una orden.");
     } finally {
       setSaving(false);
     }
@@ -146,7 +148,7 @@ const AdminProducts: React.FC = () => {
     },
     { 
       header: 'Precio', 
-      accessor: (p: Product) => <span className="font-bold text-manchester-gold">${p.price.toFixed(2)}</span>
+      accessor: (p: Product) => <span className="font-bold text-manchester-gold">{formatCOP(p.price)}</span>
     },
     { 
       header: 'Stock', 
@@ -260,9 +262,21 @@ const AdminProducts: React.FC = () => {
               value={formData.category} 
               onChange={e => setFormData({...formData, category: e.target.value})} 
               options={[
-                { value: 'Ropa', label: 'Ropa' },
-                { value: 'Accesorios', label: 'Accesorios' },
-                { value: 'Calzado', label: 'Calzado' },
+                { value: 'Camisetas', label: 'Superior - Camisetas' },
+                { value: 'Chaquetas', label: 'Superior - Chaquetas' },
+                { value: 'Buzos', label: 'Superior - Buzos' },
+                { value: 'Camisas', label: 'Superior - Camisas' },
+                { value: 'Polos', label: 'Superior - Polos' },
+                { value: 'Pantalones', label: 'Inferior - Pantalones' },
+                { value: 'Jeans', label: 'Inferior - Jeans' },
+                { value: 'Shorts', label: 'Inferior - Shorts' },
+                { value: 'Sudaderas', label: 'Inferior - Sudaderas' },
+                { value: 'Deportiva', label: 'Inferior - Deportiva' },
+                { value: 'Relojes', label: 'Accesorios - Relojes' },
+                { value: 'Gafas', label: 'Accesorios - Gafas' },
+                { value: 'Cinturones', label: 'Accesorios - Cinturones' },
+                { value: 'Gorras', label: 'Accesorios - Gorras' },
+                { value: 'Bufandas', label: 'Accesorios - Bufandas' },
               ]}
               className="mb-0 sm:col-span-2"
             />

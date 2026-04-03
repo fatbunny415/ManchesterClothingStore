@@ -115,6 +115,7 @@ public class OrdersController : ControllerBase
                 {
                     i.ProductId,
                     ProductName = i.Product.Name,
+                    ProductImageUrl = i.Product.ImageUrl,
                     i.Quantity,
                     i.UnitPrice,
                     LineTotal = i.Quantity * i.UnitPrice
@@ -152,6 +153,7 @@ public class OrdersController : ControllerBase
             {
                 i.ProductId,
                 ProductName = i.Product.Name,
+                ProductImageUrl = i.Product.ImageUrl,
                 i.Quantity,
                 i.UnitPrice,
                 LineTotal = i.Quantity * i.UnitPrice
@@ -185,6 +187,7 @@ public class OrdersController : ControllerBase
                 {
                     i.ProductId,
                     ProductName = i.Product.Name,
+                    ProductImageUrl = i.Product.ImageUrl,
                     i.Quantity,
                     i.UnitPrice,
                     LineTotal = i.Quantity * i.UnitPrice

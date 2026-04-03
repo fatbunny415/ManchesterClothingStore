@@ -5,6 +5,7 @@ import { productService } from '../api/services';
 import { Product } from '../types';
 import { useCartStore } from '../store/useCartStore';
 import { motion } from 'framer-motion';
+import { formatCOP } from '../utils/formatCurrency';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -95,7 +96,7 @@ const ProductDetail = () => {
               </span>
               <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">{product.name}</h1>
               <div className="flex items-center space-x-4 mb-6">
-                <span className="text-3xl font-bold text-manchester-white">${product.price.toLocaleString()}</span>
+                <span className="text-3xl font-bold text-manchester-white">{formatCOP(product.price)}</span>
                 {product.stock > 0 ? (
                   <span className="bg-green-500/10 text-green-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
                     EN STOCK

@@ -4,6 +4,7 @@ import { Product } from '../types';
 import { Link } from 'react-router-dom';
 import { useCartStore } from '../store/useCartStore';
 import toast from 'react-hot-toast';
+import { formatCOP } from '../utils/formatCurrency';
 
 interface ProductCardProps {
   product: Product;
@@ -91,7 +92,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </p>
         <div className="flex justify-between items-center">
           <span className="text-manchester-white font-bold text-xl">
-            ${product.price.toLocaleString()}
+            {formatCOP(product.price)}
           </span>
           <span className="text-white/20 text-[10px] uppercase tracking-widest">
             Stock: {product.stock}
