@@ -7,7 +7,6 @@ import StatusBadge from '../../components/admin/ui/StatusBadge';
 import { Edit2, Loader2, RefreshCw } from 'lucide-react';
 import type { AdminOrder } from '../../types';
 import { useAuthStore } from '../../store/useAuthStore';
-import SellerOrdersKanban from './SellerOrdersKanban';
 import toast from 'react-hot-toast';
 import { formatCOP } from '../../utils/formatCurrency';
 
@@ -124,9 +123,6 @@ const AdminOrders: React.FC = () => {
         </button>
       </div>
 
-      {user?.role === 'Vendedor' ? (
-        <SellerOrdersKanban orders={orders} onOrderUpdated={loadOrders} />
-      ) : (
         <AdminTable 
           data={orders} 
           columns={columns} 
@@ -134,7 +130,6 @@ const AdminOrders: React.FC = () => {
           loading={loading}
           emptyMessage="No hay pedidos registrados en el sistema."
         />
-      )}
 
       {/* UPDATE STATUS MODAL */}
       <AdminModal 
