@@ -108,7 +108,7 @@ const AdminUsers: React.FC = () => {
         return (
           <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
             isAd ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 
-            isVen ? 'bg-manchester-gold/10 text-manchester-gold border border-manchester-gold/20' : 
+            isVen ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 
             'bg-white/5 text-white/50 border border-white/10'
           }`}>
             {isAd && <ShieldAlert className="w-3 h-3" />}
@@ -126,7 +126,7 @@ const AdminUsers: React.FC = () => {
           <button 
             type="button"
             onClick={() => handleOpenEdit(u)}
-            className="p-2 bg-white/5 hover:bg-manchester-gold/20 text-white/60 hover:text-manchester-gold transition-colors rounded-lg"
+            className="p-2 bg-white/5 hover:bg-red-500/20 text-white/60 hover:text-red-500 transition-colors rounded-lg"
             title="Cambiar Rango"
           >
             <Edit2 className="w-4 h-4" />

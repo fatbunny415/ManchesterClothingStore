@@ -28,7 +28,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   return (
     <AdminModal isOpen={isOpen} onClose={onClose} title={title} maxWidth="sm">
       <div className="flex flex-col items-center text-center pb-2">
-        <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isDestructive ? 'bg-red-500/10 text-red-400' : 'bg-manchester-gold/10 text-manchester-gold'}`}>
+        <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isDestructive ? 'bg-red-500/10 text-red-400' : 'bg-red-500/10 text-red-500'}`}>
           <AlertCircle className="w-8 h-8" />
         </div>
         

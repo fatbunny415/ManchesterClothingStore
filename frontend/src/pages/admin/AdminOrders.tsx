@@ -86,7 +86,7 @@ const AdminOrders: React.FC = () => {
     },
     { 
       header: 'Total', 
-      accessor: (o: AdminOrder) => <span className="font-bold text-manchester-gold">{formatCOP(o.totalAmount)}</span>
+      accessor: (o: AdminOrder) => <span className="font-bold text-red-500">{formatCOP(o.totalAmount)}</span>
     },
     { 
       header: 'Estado Actual', 
@@ -99,7 +99,7 @@ const AdminOrders: React.FC = () => {
         <button 
           type="button"
           onClick={() => handleOpenEdit(o)}
-          className="p-2 bg-white/5 hover:bg-manchester-gold/20 text-white/60 hover:text-manchester-gold transition-colors rounded-lg inline-flex"
+          className="p-2 bg-white/5 hover:bg-red-500/20 text-white/60 hover:text-red-500 transition-colors rounded-lg inline-flex"
         >
           <Edit2 className="w-4 h-4" />
         </button>

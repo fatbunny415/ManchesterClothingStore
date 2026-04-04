@@ -51,6 +51,9 @@ public class UsersController : ControllerBase
                 u.Id,
                 u.FullName,
                 u.Email,
+                u.PhoneNumber,
+                u.Address,
+                u.City,
                 Role = u.Role.ToString(),
                 u.CreatedAt
             })
@@ -94,6 +97,40 @@ public class UsersController : ControllerBase
         await _context.SaveChangesAsync();
 
         return Ok("Contraseña actualizada correctamente.");
+    }
+
+    // =========================
+    // PUT: api/users/profile
+    // Cambiar datos del perfil del usuario (Nombre, Teléfono, Dirección)
+    // =========================
+    [HttpPut("profile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
+    {
+        var userId = GetUserId();
+
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+            return NotFound("Usuario no encontrado.");
+
+        user.FullName = dto.FullName;
+        user.PhoneNumber = dto.PhoneNumber;
+        user.Address = dto.Address;
+        user.City = dto.City;
+
+        _context.Users.Update(user);
+        await _context.SaveChangesAsync();
+
+        return Ok(new 
+        { 
+            message = "Perfil actualizado correctamente.",
+            user = new 
+            {
+                user.FullName,
+                user.PhoneNumber,
+                user.Address,
+                user.City
+            }
+        });
     }
 
     // =========================

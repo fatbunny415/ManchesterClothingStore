@@ -70,7 +70,7 @@ const AdminDashboard: React.FC = () => {
     },
     { 
       header: 'Total', 
-      accessor: (item: AdminOrder) => <span className="text-manchester-gold font-bold">{formatCOP(item.totalAmount)}</span>
+      accessor: (item: AdminOrder) => <span className="text-red-500 font-bold">{formatCOP(item.totalAmount)}</span>
     },
     { 
       header: 'Estado', 
@@ -81,8 +81,8 @@ const AdminDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="admin-page-enter flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="w-12 h-12 border-4 border-manchester-gold border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-6 text-manchester-gold font-bold tracking-widest text-[10px] uppercase">Calculando métricas en tiempo real...</p>
+        <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-6 text-red-500 font-bold tracking-widest text-[10px] uppercase">Calculando métricas en tiempo real...</p>
       </div>
     );
   }

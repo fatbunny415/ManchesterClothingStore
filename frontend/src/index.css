@@ -137,7 +137,7 @@
 }
 
 .admin-sidebar__link--active {
-  @apply text-manchester-gold bg-manchester-gold/[0.06];
+  @apply text-red-500 bg-red-500/[0.06];
 }
 
 .admin-sidebar__bottom {
@@ -159,7 +159,7 @@
 }
 
 .admin-card--gold {
-  @apply bg-[#111111] border border-manchester-gold/10 rounded-2xl p-6 transition-all duration-300 hover:border-manchester-gold/25;
+  @apply bg-[#111111] border border-red-500/10 rounded-2xl p-6 transition-all duration-300 hover:border-red-500/25;
 }
 
 /* Admin Tables */
@@ -185,7 +185,7 @@
 }
 
 .admin-btn--primary {
-  @apply bg-manchester-gold text-[#0a0a0a] hover:bg-manchester-goldLight shadow-lg shadow-manchester-gold/10;
+  @apply bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/10;
 }
 
 .admin-btn--secondary {
@@ -206,15 +206,15 @@
 
 /* Admin Input */
 .admin-input {
-  @apply w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/20 outline-none transition-all duration-200 focus:border-manchester-gold/50 focus:ring-1 focus:ring-manchester-gold/20;
+  @apply w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/20 outline-none transition-all duration-200 focus:border-red-500/50 focus:ring-1 focus:ring-red-500/20;
 }
 
 .admin-select {
-  @apply w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-manchester-gold/50 focus:ring-1 focus:ring-manchester-gold/20 appearance-none;
+  @apply w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-red-500/50 focus:ring-1 focus:ring-red-500/20 appearance-none;
 }
 
 .admin-textarea {
-  @apply w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/20 outline-none transition-all duration-200 focus:border-manchester-gold/50 focus:ring-1 focus:ring-manchester-gold/20 resize-none;
+  @apply w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/20 outline-none transition-all duration-200 focus:border-red-500/50 focus:ring-1 focus:ring-red-500/20 resize-none;
 }
 
 .admin-label {
@@ -273,4 +273,3 @@
 .admin-page-enter {
   animation: adminFadeIn 0.3s ease-out;
 }
-

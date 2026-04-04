@@ -8,6 +8,7 @@ using ManchesterClothingStore.Application.DTOs;
 using ManchesterClothingStore.Domain.Entities;
 using ManchesterClothingStore.Domain.Enums;
 using ManchesterClothingStore.Infrastructure.Persistence;
+using ManchesterClothingStore.Application.Interfaces;
 
 namespace ManchesterClothingStore.API.Controllers;
 
@@ -17,10 +18,12 @@ namespace ManchesterClothingStore.API.Controllers;
 public class OrdersController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IEmailService _emailService;
 
-    public OrdersController(AppDbContext context)
+    public OrdersController(AppDbContext context, IEmailService emailService)
     {
         _context = context;
+        _emailService = emailService;
     }
 
     private Guid GetUserId()
@@ -43,6 +46,7 @@ public class OrdersController : ControllerBase
         var userId = GetUserId();
 
         var cart = await _context.Carts
+            .Include(c => c.User)
             .Include(c => c.Items)
             .ThenInclude(i => i.Product)
             .FirstOrDefaultAsync(c => c.UserId == userId);
@@ -81,6 +85,17 @@ public class OrdersController : ControllerBase
         _context.CartItems.RemoveRange(cart.Items);
 
         await _context.SaveChangesAsync();
+
+        // Enviar email simulado
+        if (cart.User != null)
+        {
+            await _emailService.SendOrderConfirmationEmailAsync(
+                cart.User.Email, 
+                cart.User.FullName, 
+                order.Id.ToString(), 
+                order.TotalAmount
+            );
+        }
 
         return Ok(new
         {
@@ -199,11 +214,11 @@ public class OrdersController : ControllerBase
     }
 
     // =========================
-    // PUT: api/orders/{id}/status
-    // Admin/Vendedor: actualizar estado
+    // PATCH: api/orders/{id}/status
+    // Admin/Vendedor: actualizar estado (Kanban)
     // =========================
     [Authorize(Roles = "Admin,Vendedor")]
-    [HttpPut("{id:guid}/status")]
+    [HttpPatch("{id:guid}/status")]
     public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateOrderStatusDto dto)
     {
         var order = await _context.Orders.FindAsync(id);

@@ -28,7 +28,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
 
     setIsCheckingOut(true);
     try {
-      await orderService.createOrder();
+      const response = await orderService.createOrder();
       await clearCart();
       onClose();
       toast.success('PEDIDO PROCESADO EXITOSAMENTE', { 
@@ -40,7 +40,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
           letterSpacing: '0.1em'
         }
       });
-      navigate('/orders');
+      navigate(`/order-confirmation/${response.orderId}`);
     } catch (error) {
       console.error('Error during checkout:', error);
       toast.error('Error al procesar el pedido. Por favor intenta de nuevo.');

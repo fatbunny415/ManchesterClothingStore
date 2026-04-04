@@ -58,8 +58,8 @@ const AdminProfile: React.FC = () => {
   if (loading) {
     return (
       <div className="admin-page-enter flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="w-12 h-12 border-4 border-manchester-gold border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-manchester-gold text-xs font-bold tracking-widest uppercase">Cargando perfil...</p>
+        <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-red-500 text-xs font-bold tracking-widest uppercase">Cargando perfil...</p>
       </div>
     );
   }
@@ -75,15 +75,15 @@ const AdminProfile: React.FC = () => {
         
         {/* INFO CARD */}
         <div className="md:col-span-1 border border-white/[0.04] bg-[#111] rounded-2xl p-8 flex flex-col items-center text-center">
-          <div className="w-24 h-24 bg-manchester-gold/10 border border-manchester-gold/30 rounded-full flex items-center justify-center mb-6">
-            <User className="w-10 h-10 text-manchester-gold" />
+          <div className="w-24 h-24 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center mb-6">
+            <User className="w-10 h-10 text-red-500" />
           </div>
           <h2 className="text-xl font-bold text-white mb-1">{user?.fullName}</h2>
           <p className="text-sm text-white/50 mb-6">{user?.email}</p>
           
-          <div className="inline-flex items-center gap-2 bg-manchester-gold/10 px-4 py-2 rounded-full border border-manchester-gold/20">
-            <Shield className="w-4 h-4 text-manchester-gold" />
-            <span className="text-xs font-bold text-manchester-gold tracking-widest uppercase">{user?.role}</span>
+          <div className="inline-flex items-center gap-2 bg-red-500/10 px-4 py-2 rounded-full border border-red-500/20">
+            <Shield className="w-4 h-4 text-red-500" />
+            <span className="text-xs font-bold text-red-500 tracking-widest uppercase">{user?.role}</span>
           </div>
         </div>
 

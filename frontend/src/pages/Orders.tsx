@@ -4,6 +4,7 @@ import { Order, OrderItem, getOrderStatusLabel } from '../types';
 import { Loader2, Package, Calendar, CreditCard, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatCOP } from '../utils/formatCurrency';
+import { Link } from 'react-router-dom';
 
 const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -80,10 +81,16 @@ const Orders = () => {
                       </p>
                       <p className="text-sm font-bold text-manchester-gold">{formatCOP(order.totalAmount)}</p>
                     </div>
-                    <div className="hidden md:block text-right">
+                    <div className="hidden md:flex flex-col items-end gap-2">
                       <span className="inline-block px-3 py-1 rounded-full bg-white/5 text-[9px] font-bold tracking-widest text-white/60 border border-white/10 uppercase">
                         {getOrderStatusLabel(order.status)}
                       </span>
+                      <Link 
+                        to={`/order-confirmation/${order.id}`} 
+                        className="text-[10px] text-manchester-gold hover:text-white font-bold tracking-widest uppercase flex items-center gap-1 mt-1 transition-colors"
+                      >
+                        Ver Recibo <ChevronRight className="w-3 h-3" />
+                      </Link>
                     </div>
                   </div>
                 </div>

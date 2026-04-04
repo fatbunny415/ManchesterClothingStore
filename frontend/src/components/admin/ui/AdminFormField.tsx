@@ -19,7 +19,7 @@ export const AdminFormField: React.FC<AdminFormFieldProps> = ({
     <div className={`flex flex-col mb-4 ${className}`}>
       <label className="admin-label">
         {label}
-        {props.required && <span className="text-manchester-gold ml-1">*</span>}
+        {props.required && <span className="text-red-500 ml-1">*</span>}
       </label>
       
       {type === 'textarea' ? (
