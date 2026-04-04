@@ -99,4 +99,16 @@ export const orderService = {
   }
 };
 
+export const userService = {
+  async getMe() {
+    const { data } = await api.get('/users/me');
+    return data;
+  },
+
+  async updateProfile(profileData: { fullName: string; phoneNumber?: string; address?: string; city?: string }) {
+    const { data } = await api.put('/users/profile', profileData);
+    return data;
+  }
+};
+
 

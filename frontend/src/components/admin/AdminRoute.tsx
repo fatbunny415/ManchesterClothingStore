@@ -11,9 +11,14 @@ const AdminRoute: React.FC = () => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Authenticated but not Admin/Vendedor → redirect to home
-  if (user.role !== 'Admin' && user.role !== 'Vendedor') {
+  // Authenticated but normal Client → redirect to home
+  if (user.role === 'Cliente') {
     return <Navigate to="/" replace />;
+  }
+
+  // If user is Vendedor, redirect to their dedicated seller portal
+  if (user.role === 'Vendedor') {
+    return <Navigate to="/seller" replace />;
   }
 
   // Admin → render child routes

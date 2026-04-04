@@ -7,6 +7,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ProductDetail from './pages/ProductDetail';
 import Orders from './pages/Orders';
+import OrderConfirmation from './pages/OrderConfirmation';
+import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import PlaceholderPage from './pages/PlaceholderPage';
 import ForgotPassword from './pages/ForgotPassword';
@@ -24,6 +26,13 @@ import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminProfile from './pages/admin/AdminProfile';
+
+// Seller imports
+import SellerRoute from './components/seller/SellerRoute';
+import SellerLayout from './components/seller/SellerLayout';
+import SellerDashboard from './pages/seller/SellerDashboard';
+import SellerOrders from './pages/seller/SellerOrders';
+
 
 function App() {
   const fetchCart = useCartStore(state => state.fetchCart);
@@ -57,8 +66,18 @@ function App() {
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/products" element={<AdminProducts />} />
               <Route path="/admin/orders" element={<AdminOrders />} />
-              <Route path="/admin/users" element={<AdminUsers />} /> {/* Added AdminUsers route */}
+              <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/admin/profile" element={<AdminProfile />} />
+            </Route>
+          </Route>
+
+          {/* ========================= */}
+          {/* Seller Routes (no Navbar/Footer) */}
+          {/* ========================= */}
+          <Route element={<SellerRoute />}>
+            <Route element={<SellerLayout />}>
+              <Route path="/seller" element={<SellerDashboard />} />
+              <Route path="/seller/orders" element={<SellerOrders />} />
             </Route>
           </Route>
 
@@ -87,6 +106,22 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <Orders />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/order-confirmation/:id"
+                      element={
+                        <ProtectedRoute>
+                          <OrderConfirmation />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/profile"
+                      element={
+                        <ProtectedRoute>
+                          <Profile />
                         </ProtectedRoute>
                       }
                     />

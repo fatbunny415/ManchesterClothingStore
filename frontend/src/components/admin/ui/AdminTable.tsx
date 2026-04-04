@@ -26,7 +26,7 @@ export function AdminTable<T>({
   if (loading) {
     return (
       <div className="w-full flex flex-col items-center justify-center py-20 bg-[#111] rounded-2xl border border-white/[0.04]">
-        <Loader2 className="w-8 h-8 animate-spin text-manchester-gold mb-3" />
+        <Loader2 className="w-8 h-8 animate-spin text-red-500 mb-3" />
         <p className="text-white/40 text-xs tracking-widest uppercase font-bold">Cargando datos...</p>
       </div>
     );

@@ -66,7 +66,7 @@ export const adminOrderService = {
     orderId: string,
     status: number
   ): Promise<{ message: string; orderId: string; status: string }> {
-    const { data } = await api.put<{
+    const { data } = await api.patch<{
       message: string;
       orderId: string;
       status: string;

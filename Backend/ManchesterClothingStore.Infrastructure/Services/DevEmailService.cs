@@ -41,4 +41,31 @@ public class DevEmailService : IEmailService
 
         return Task.CompletedTask;
     }
+
+    public Task SendOrderConfirmationEmailAsync(string toEmail, string customerName, string orderId, decimal totalAmount)
+    {
+        _logger.LogInformation("\n");
+        _logger.LogInformation("=========================================================================");
+        _logger.LogInformation("✉️ NUEVO CORREO ELECTRÓNICO INTERCEPTADO (MODO DESARROLLO)");
+        _logger.LogInformation("=========================================================================");
+        _logger.LogInformation("Para:      {Email}", toEmail);
+        _logger.LogInformation("Asunto:    Confirmación de Pedido - Manchester Clothing");
+        _logger.LogInformation("-------------------------------------------------------------------------");
+        _logger.LogInformation("Hola {Customer},", customerName);
+        _logger.LogInformation("");
+        _logger.LogInformation("¡Gracias por tu compra en Manchester Clothing Store!");
+        _logger.LogInformation("Tu pedido ha sido creado y actualmente está en proceso.");
+        _logger.LogInformation("");
+        _logger.LogInformation("Detalles del Pedido:");
+        _logger.LogInformation("ID de Pedido: {OrderId}", orderId);
+        _logger.LogInformation("Total:        ${TotalAmount}", totalAmount.ToString("N2"));
+        _logger.LogInformation("");
+        _logger.LogInformation("Te notificaremos de nuevo cuando el pedido sea enviado.");
+        _logger.LogInformation("");
+        _logger.LogInformation("Atentamente,");
+        _logger.LogInformation("Equipo Manchester");
+        _logger.LogInformation("=========================================================================\n");
+
+        return Task.CompletedTask;
+    }
 }

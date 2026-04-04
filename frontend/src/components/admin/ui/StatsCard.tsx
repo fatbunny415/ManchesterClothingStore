@@ -24,7 +24,7 @@ const StatsCard: React.FC<StatsCardProps> = ({ label, value, icon: Icon, trend, 
         <h3 className="text-[10px] font-bold tracking-[0.15em] uppercase text-white/40 mb-2">
           {label}
         </h3>
-        <p className="text-3xl font-serif font-bold text-manchester-gold tracking-tighter">
+        <p className="text-3xl font-serif font-bold text-red-500 tracking-tighter">
           {value}
         </p>
 
@@ -38,7 +38,7 @@ const StatsCard: React.FC<StatsCardProps> = ({ label, value, icon: Icon, trend, 
         )}
       </div>
 
-      <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center text-white/30 transition-colors group-hover:bg-manchester-gold/10 group-hover:text-manchester-gold">
+      <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center text-white/30 transition-colors group-hover:bg-red-500/10 group-hover:text-red-500">
         <Icon className="w-5 h-5" />
       </div>
     </motion.div>

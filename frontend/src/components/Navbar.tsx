@@ -5,6 +5,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useCartStore } from '../store/useCartStore';
 import api from '../api/axios';
 import Cart from './Cart';
+import UserAvatar from './UserAvatar';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
@@ -75,7 +76,9 @@ const Navbar = () => {
                   <Link to="/orders" aria-label="Historial de Órdenes" className="p-2 hover:bg-white/5 rounded-full group transition-colors">
                     <Package className="w-5 h-5 text-white/70 group-hover:text-manchester-gold" />
                   </Link>
-                  <span className="text-xs uppercase font-semibold text-white/40 tracking-widest px-2">{user?.fullName?.split(' ')[0] || 'User'}</span>
+                  <Link to="/profile" className="px-2 transition-transform hover:scale-105">
+                    <UserAvatar name={user?.fullName} role={user?.role} size="sm" />
+                  </Link>
                   <button onClick={handleLogout} aria-label="Cerrar Sesión" className="p-2 hover:bg-red-500/10 rounded-full group transition-colors">
                     <LogOut className="w-5 h-5 text-white/50 group-hover:text-red-400" />
                   </button>

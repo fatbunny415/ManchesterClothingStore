@@ -47,7 +47,7 @@ const AdminSidebar: React.FC = () => {
               <span className="text-lg font-serif font-bold tracking-tight text-manchester-white">
                 MANCHESTER
               </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-manchester-gold" />
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
             </motion.div>
           ) : (
             <motion.div
@@ -57,7 +57,7 @@ const AdminSidebar: React.FC = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
             >
-              <span className="text-lg font-serif font-bold text-manchester-gold">M</span>
+              <span className="text-lg font-serif font-bold text-red-500">M</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -96,7 +96,7 @@ const AdminSidebar: React.FC = () => {
                 {isActive && (
                   <motion.div
                     layoutId="admin-nav-indicator"
-                    className="absolute left-0 top-0 bottom-0 w-[3px] bg-manchester-gold rounded-r-full"
+                    className="absolute left-0 top-0 bottom-0 w-[3px] bg-red-500 rounded-r-full"
                     transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                   />
                 )}

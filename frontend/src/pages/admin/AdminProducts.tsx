@@ -148,7 +148,7 @@ const AdminProducts: React.FC = () => {
     },
     { 
       header: 'Precio', 
-      accessor: (p: Product) => <span className="font-bold text-manchester-gold">{formatCOP(p.price)}</span>
+      accessor: (p: Product) => <span className="font-bold text-red-500">{formatCOP(p.price)}</span>
     },
     { 
       header: 'Stock', 
@@ -172,7 +172,7 @@ const AdminProducts: React.FC = () => {
           <button 
             type="button"
             onClick={() => handleOpenEdit(p)}
-            className="p-2 bg-white/5 hover:bg-manchester-gold/20 text-white/60 hover:text-manchester-gold transition-colors rounded-lg"
+            className="p-2 bg-white/5 hover:bg-red-500/20 text-white/60 hover:text-red-500 transition-colors rounded-lg"
           >
             <Edit2 className="w-4 h-4" />
           </button>
@@ -302,7 +302,7 @@ const AdminProducts: React.FC = () => {
                 type="checkbox" 
                 checked={formData.isActive}
                 onChange={e => setFormData({...formData, isActive: e.target.checked})}
-                className="w-5 h-5 rounded border-white/20 text-manchester-gold focus:ring-manchester-gold focus:ring-offset-[#111] bg-[#222]"
+                className="w-5 h-5 rounded border-white/20 text-red-500 focus:ring-red-500 focus:ring-offset-[#111] bg-[#222]"
               />
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-white">Producto Activo</span>
