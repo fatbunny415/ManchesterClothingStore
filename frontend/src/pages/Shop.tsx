@@ -75,7 +75,8 @@ const Shop = () => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const categoryFilter = (selectedCategory === 'Todos') ? undefined : selectedCategory;
+        const macroCategories = ['Todos', 'Superior', 'Inferior', 'Accesorios'];
+        const categoryFilter = macroCategories.includes(selectedCategory) ? undefined : selectedCategory;
         const data = await productService.getAll(categoryFilter, searchTerm, true);
         
         // Advanced frontend filtering simulation
@@ -173,7 +174,7 @@ const Shop = () => {
                 className="overflow-hidden space-y-2"
               >
                 {categories.map(cat => (
-                  <label key={cat} className="flex items-center space-x-3 cursor-pointer group">
+                  <label key={cat} onClick={() => setSelectedCategory(cat)} className="flex items-center space-x-3 cursor-pointer group">
                     <div className={`w-4 h-4 rounded-sm border flex items-center justify-center transition-all ${
                       selectedCategory === cat ? 'bg-manchester-gold border-manchester-gold' : 'border-white/20 group-hover:border-manchester-gold/50'
                     }`}>
@@ -208,7 +209,7 @@ const Shop = () => {
               className="overflow-hidden space-y-2"
             >
               {garmentTypes.map(type => (
-                <label key={type} className="flex items-center space-x-3 cursor-pointer group">
+                <label key={type} onClick={() => setSelectedType(selectedType === type ? '' : type)} className="flex items-center space-x-3 cursor-pointer group">
                   <div className={`w-4 h-4 rounded-sm border flex items-center justify-center transition-all ${
                     selectedType === type ? 'bg-manchester-gold border-manchester-gold' : 'border-white/20 group-hover:border-manchester-gold/50'
                   }`}>

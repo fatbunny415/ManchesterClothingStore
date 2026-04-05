@@ -235,10 +235,11 @@ const AdminProducts: React.FC = () => {
               required 
               placeholder="Ej. Sudadera Black Edition"
               className="sm:col-span-2 mb-0"
+              maxLength={110}
             />
             
             <AdminFormField 
-              label="Precio (USD)" 
+              label="Precio (COP)" 
               type="number" 
               step="0.01"
               value={formData.price} 
@@ -295,6 +296,7 @@ const AdminProducts: React.FC = () => {
               value={formData.description} 
               onChange={e => setFormData({...formData, description: e.target.value})} 
               className="mb-0 sm:col-span-2"
+              maxLength={1500}
             />
 
             <label className="flex items-center gap-3 sm:col-span-2 p-4 bg-white/5 rounded-xl border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">

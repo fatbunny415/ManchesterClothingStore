@@ -1,6 +1,7 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useSellerStore } from '../../store/useSellerStore';
+import toast from 'react-hot-toast';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -25,6 +26,7 @@ const SellerSidebar: React.FC = () => {
   const { sidebarCollapsed, toggleSidebar } = useSellerStore();
   const { logout, user } = useAuthStore();
   const location = useLocation();
+  const navigate = useNavigate();
 
   return (
     <aside
@@ -118,7 +120,8 @@ const SellerSidebar: React.FC = () => {
               console.error(e);
             }
             logout();
-            window.location.href = '/login';
+            toast.success('Sesión cerrada correctamente', { position: 'bottom-right' });
+            navigate('/login');
           }}
           className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/40 transition-all duration-200 hover:text-red-400 hover:bg-white/[0.03] w-full"
           title={sidebarCollapsed ? 'Cerrar sesión' : undefined}

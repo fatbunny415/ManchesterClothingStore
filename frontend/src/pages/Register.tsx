@@ -135,6 +135,7 @@ const Register = () => {
                     onChange={(e) => setFullName(e.target.value)}
                     className="input-field w-full pl-12"
                     placeholder="John Doe"
+                    maxLength={75}
                   />
                 </div>
               </div>
@@ -150,6 +151,7 @@ const Register = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     className="input-field w-full pl-12"
                     placeholder="ejemplo@manchester.store"
+                    maxLength={110}
                   />
                 </div>
               </div>
@@ -165,6 +167,7 @@ const Register = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     className="input-field w-full pl-12 pr-12"
                     placeholder="••••••••"
+                    maxLength={75}
                   />
                   <button
                     type="button"
@@ -223,6 +226,7 @@ const Register = () => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="input-field w-full pl-12 pr-12"
                     placeholder="••••••••"
+                    maxLength={75}
                   />
                   <button
                     type="button"

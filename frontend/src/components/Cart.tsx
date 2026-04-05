@@ -112,7 +112,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                           <button 
                             onClick={() => {
                               if (item.quantity >= item.stock) {
-                                toast.error(`Stock máximo (${item.stock}) alcanzado para este producto`, {
+                                toast.error('No hay suficiente stock disponible para este producto', {
                                   style: { background: '#222', color: '#fff', fontSize: '12px' }
                                 });
                               } else {

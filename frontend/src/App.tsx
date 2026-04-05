@@ -32,6 +32,8 @@ import SellerRoute from './components/seller/SellerRoute';
 import SellerLayout from './components/seller/SellerLayout';
 import SellerDashboard from './pages/seller/SellerDashboard';
 import SellerOrders from './pages/seller/SellerOrders';
+import SellerPlaceholder from './pages/seller/SellerPlaceholder';
+import SellerSales from './pages/seller/SellerSales';
 
 
 function App() {
@@ -49,7 +51,7 @@ function App() {
 
   return (
     <Router>
-      <div className="flex flex-col min-h-screen bg-manchester-black text-manchester-white">
+      <div className="flex flex-col min-h-screen bg-manchester-black text-manchester-white overflow-x-hidden">
         <Toaster position="bottom-right" toastOptions={{
           style: {
             background: '#1a1a1a',
@@ -78,6 +80,8 @@ function App() {
             <Route element={<SellerLayout />}>
               <Route path="/seller" element={<SellerDashboard />} />
               <Route path="/seller/orders" element={<SellerOrders />} />
+              <Route path="/seller/stats" element={<SellerSales />} />
+              <Route path="/seller/profile" element={<SellerPlaceholder />} />
             </Route>
           </Route>
 

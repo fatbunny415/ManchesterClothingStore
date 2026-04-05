@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { User, UserRole } from '../types';
+import { useCartStore } from './useCartStore';
 
 interface AuthState {
   user: User | null;
@@ -21,7 +22,10 @@ export const useAuthStore = create<AuthState>()(
       updateUser: (data: Partial<User>) => set((state) => ({ 
         user: state.user ? { ...state.user, ...data } : null 
       })),
-      logout: () => set({ user: null, token: null, isAuthenticated: false }),
+      logout: () => {
+        useCartStore.getState().clearLocalCart();
+        set({ user: null, token: null, isAuthenticated: false });
+      },
     }),
     {
       name: 'manchester-auth',

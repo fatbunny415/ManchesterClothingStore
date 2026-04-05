@@ -192,6 +192,7 @@ const Login = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     className="input-field w-full pl-12"
                     placeholder="ejemplo@manchester.store"
+                    maxLength={110}
                   />
                 </div>
               </div>
@@ -207,6 +208,7 @@ const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     className="input-field w-full pl-12 pr-12"
                     placeholder="••••••••"
+                    maxLength={75}
                   />
                   <button
                     type="button"
