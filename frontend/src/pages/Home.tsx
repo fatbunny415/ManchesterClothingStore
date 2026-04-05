@@ -120,15 +120,7 @@ const Home = () => {
           </motion.div>
         </div>
 
-        {/* Scroll Indicator — línea animada */}
-        <motion.div
-          animate={{ y: [0, 12, 0] }}
-          transition={{ repeat: Infinity, duration: 2.4, ease: "easeInOut" }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 hidden md:flex flex-col items-center gap-2"
-        >
-          <span className="font-sans text-[10px] tracking-[0.3em] text-white/30 uppercase">Scroll</span>
-          <div className="w-[1px] h-14 bg-gradient-to-b from-manchester-gold to-transparent" />
-        </motion.div>
+
       </section>
 
       {/* ══════════════════════════════════════

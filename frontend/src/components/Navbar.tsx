@@ -7,6 +7,7 @@ import api from '../api/axios';
 import Cart from './Cart';
 import UserAvatar from './UserAvatar';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -22,6 +23,7 @@ const Navbar = () => {
       console.error(e);
     }
     logout();
+    toast.success('Sesión cerrada correctamente', { position: 'bottom-right' });
     navigate('/');
   };
 

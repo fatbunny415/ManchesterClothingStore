@@ -1,6 +1,7 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAdminStore } from '../../store/useAdminStore';
+import toast from 'react-hot-toast';
 import {
   LayoutDashboard,
   Package,
@@ -27,6 +28,7 @@ const AdminSidebar: React.FC = () => {
   const { sidebarCollapsed, toggleSidebar } = useAdminStore();
   const { logout, user } = useAuthStore();
   const location = useLocation();
+  const navigate = useNavigate();
 
   return (
     <aside
@@ -116,7 +118,8 @@ const AdminSidebar: React.FC = () => {
               console.error(e);
             }
             logout();
-            window.location.href = '/login';
+            toast.success('Sesión cerrada correctamente', { position: 'bottom-right' });
+            navigate('/login');
           }}
           className="admin-sidebar__link text-white/40 hover:text-red-400"
           title={sidebarCollapsed ? 'Cerrar sesión' : undefined}
