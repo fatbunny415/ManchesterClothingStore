@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 
 using System.Security.Claims;
 
@@ -15,24 +15,24 @@ namespace ManchesterClothingStore.API.Controllers;
 [Authorize]
 public class UsersController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly MongoDbContext _db;
 
-    public UsersController(AppDbContext context)
+    public UsersController(MongoDbContext db)
     {
-        _context = context;
+        _db = db;
     }
 
     // =========================
     // Helper: obtener UserId desde JWT
     // =========================
-    private Guid GetUserId()
+    private string GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (string.IsNullOrWhiteSpace(userIdClaim))
             throw new UnauthorizedAccessException("Token inválido: no se encontró el UserId.");
 
-        return Guid.Parse(userIdClaim);
+        return userIdClaim;
     }
 
     // =========================
@@ -44,25 +44,22 @@ public class UsersController : ControllerBase
     {
         var userId = GetUserId();
 
-        var user = await _context.Users
-            .Where(u => u.Id == userId)
-            .Select(u => new
-            {
-                u.Id,
-                u.FullName,
-                u.Email,
-                u.PhoneNumber,
-                u.Address,
-                u.City,
-                Role = u.Role.ToString(),
-                u.CreatedAt
-            })
-            .FirstOrDefaultAsync();
+        var user = await _db.Users.Find(u => u.Id == userId).FirstOrDefaultAsync();
 
         if (user == null)
             return NotFound("Usuario no encontrado.");
 
-        return Ok(user);
+        return Ok(new
+        {
+            user.Id,
+            user.FullName,
+            user.Email,
+            user.PhoneNumber,
+            user.Address,
+            user.City,
+            Role = user.Role.ToString(),
+            user.CreatedAt
+        });
     }
 
     // =========================
@@ -84,7 +81,7 @@ public class UsersController : ControllerBase
 
         var userId = GetUserId();
 
-        var user = await _context.Users.FindAsync(userId);
+        var user = await _db.Users.Find(u => u.Id == userId).FirstOrDefaultAsync();
         if (user == null)
             return NotFound("Usuario no encontrado.");
 
@@ -94,9 +91,9 @@ public class UsersController : ControllerBase
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
 
-        await _context.SaveChangesAsync();
+        await _db.Users.ReplaceOneAsync(u => u.Id == userId, user);
 
-        return Ok("Contraseña actualizada correctamente.");
+        return Ok(new { message = "Contraseña actualizada correctamente." });
     }
 
     // =========================
@@ -108,7 +105,7 @@ public class UsersController : ControllerBase
     {
         var userId = GetUserId();
 
-        var user = await _context.Users.FindAsync(userId);
+        var user = await _db.Users.Find(u => u.Id == userId).FirstOrDefaultAsync();
         if (user == null)
             return NotFound("Usuario no encontrado.");
 
@@ -117,8 +114,7 @@ public class UsersController : ControllerBase
         user.Address = dto.Address;
         user.City = dto.City;
 
-        _context.Users.Update(user);
-        await _context.SaveChangesAsync();
+        await _db.Users.ReplaceOneAsync(u => u.Id == userId, user);
 
         return Ok(new 
         { 
@@ -141,8 +137,9 @@ public class UsersController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetUsers()
     {
-        var users = await _context.Users
-            .Select(u => new
+        var usersList = await _db.Users.Find(_ => true).SortByDescending(u => u.CreatedAt).ToListAsync();
+        
+        var users = usersList.Select(u => new
             {
                 u.Id,
                 u.FullName,
@@ -150,9 +147,7 @@ public class UsersController : ControllerBase
                 RoleLabel = u.Role.ToString(),
                 RoleId = (int)u.Role,
                 u.CreatedAt
-            })
-            .OrderByDescending(u => u.CreatedAt)
-            .ToListAsync();
+            }).ToList();
 
         return Ok(users);
     }
@@ -163,14 +158,14 @@ public class UsersController : ControllerBase
     // =========================
     [HttpPut("{id}/role")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateRole(Guid id, [FromBody] UpdateRoleDto dto)
+    public async Task<IActionResult> UpdateRole(string id, [FromBody] UpdateRoleDto dto)
     {
         var currentUserId = GetUserId();
 
         if (id == currentUserId)
             return BadRequest("No puedes cambiar tu propio rol.");
 
-        var user = await _context.Users.FindAsync(id);
+        var user = await _db.Users.Find(u => u.Id == id).FirstOrDefaultAsync();
         if (user == null)
             return NotFound("Usuario no encontrado.");
 
@@ -179,8 +174,7 @@ public class UsersController : ControllerBase
 
         user.Role = (ManchesterClothingStore.Domain.Enums.UserRole)dto.Role;
 
-        _context.Users.Update(user);
-        await _context.SaveChangesAsync();
+        await _db.Users.ReplaceOneAsync(u => u.Id == id, user);
 
         return Ok(new { message = "Rol actualizado correctamente." });
     }
@@ -191,22 +185,21 @@ public class UsersController : ControllerBase
     // =========================
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> DeleteUser(Guid id)
+    public async Task<IActionResult> DeleteUser(string id)
     {
         var currentUserId = GetUserId();
 
         if (id == currentUserId)
             return BadRequest("No puedes eliminar tu propia cuenta.");
 
-        var user = await _context.Users.FindAsync(id);
+        var user = await _db.Users.Find(u => u.Id == id).FirstOrDefaultAsync();
         if (user == null)
             return NotFound("Usuario no encontrado.");
 
         if (user.Role == ManchesterClothingStore.Domain.Enums.UserRole.Admin)
             return BadRequest("Seguridad: Un Administrador no puede eliminar a otro Administrador.");
 
-        _context.Users.Remove(user);
-        await _context.SaveChangesAsync();
+        await _db.Users.DeleteOneAsync(u => u.Id == id);
 
         return Ok(new { message = "Usuario eliminado exitosamente." });
     }

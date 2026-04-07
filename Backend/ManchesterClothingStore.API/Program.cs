@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
+
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
 using ManchesterClothingStore.Infrastructure.Persistence;
@@ -16,19 +17,27 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IEmailService, DevEmailService>();
 
 // CORS — permitir frontend Vite
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? 
+    new[] { "http://localhost:5173", "http://localhost:4173", "http://localhost:5174" };
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:4173", "http://localhost:5174")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
 });
 
-// Controllers
-builder.Services.AddControllers();
+// Controllers con serialización JSON segura (evita ciclos infinitos)
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
 
 // Swagger + JWT (Authorize en Swagger)
 builder.Services.AddEndpointsApiExplorer();
@@ -60,11 +69,11 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// DbContext SQLite
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
-           .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
-);
+// Configuración MongoDB
+builder.Services.Configure<MongoDbSettings>(
+    builder.Configuration.GetSection("MongoDB"));
+
+builder.Services.AddSingleton<MongoDbContext>();
 
 // JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -89,8 +98,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// Servicio de reCAPTCHA v3
-builder.Services.AddSingleton<RecaptchaService>();
+// HttpClientFactory para evitar socket exhaustion
+builder.Services.AddHttpClient<RecaptchaService>();
 
 // Rate Limiting — 5 intentos por IP cada 15 minutos en login
 builder.Services.AddRateLimiter(options =>
@@ -112,6 +121,10 @@ builder.Services.AddRateLimiter(options =>
 });
 
 var app = builder.Build();
+
+// Crear índices de MongoDB al iniciar
+var mongoDb = app.Services.GetRequiredService<MongoDbContext>();
+await mongoDb.EnsureIndexesAsync();
 
 // Swagger solo en Development
 if (app.Environment.IsDevelopment())

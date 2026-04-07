@@ -1,19 +1,20 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+
 namespace ManchesterClothingStore.Domain.Entities;
 
 public class CartItem
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
 
-    public Guid CartId { get; set; }
-    public Cart Cart { get; set; } = null!;
-
-    public Guid ProductId { get; set; }
-    public Product Product { get; set; } = null!;
+    public string ProductId { get; set; } = string.Empty;
 
     public int Quantity { get; set; } = 1;
 
     public decimal UnitPrice { get; set; } = 0;
 
-    // No se guarda en DB: solo para calcular total del item
+    [BsonIgnore]
     public decimal LineTotal => UnitPrice * Quantity;
 }

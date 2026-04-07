@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 using Microsoft.IdentityModel.Tokens;
 
 using System.IdentityModel.Tokens.Jwt;
@@ -22,15 +22,15 @@ namespace ManchesterClothingStore.API.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly MongoDbContext _db;
     private readonly IConfiguration _configuration;
     private readonly RecaptchaService _recaptchaService;
     private readonly ILogger<AuthController> _logger;
     private readonly IEmailService _emailService;
 
-    public AuthController(AppDbContext context, IConfiguration configuration, RecaptchaService recaptchaService, ILogger<AuthController> logger, IEmailService emailService)
+    public AuthController(MongoDbContext db, IConfiguration configuration, RecaptchaService recaptchaService, ILogger<AuthController> logger, IEmailService emailService)
     {
-        _context = context;
+        _db = db;
         _configuration = configuration;
         _recaptchaService = recaptchaService;
         _logger = logger;
@@ -53,7 +53,7 @@ public class AuthController : ControllerBase
         if (passwordError != null)
             return BadRequest(new { message = passwordError });
 
-        if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
+        if (await _db.Users.Find(u => u.Email == dto.Email).AnyAsync())
             return BadRequest(new { message = "El usuario ya existe." });
 
         var user = new User
@@ -63,8 +63,7 @@ public class AuthController : ControllerBase
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
         };
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        await _db.Users.InsertOneAsync(user);
 
         return Ok(new { message = "Usuario registrado correctamente." });
     }
@@ -81,8 +80,7 @@ public class AuthController : ControllerBase
         if (!isHuman)
             return BadRequest(new { message = "Verificación reCAPTCHA fallida. Intenta de nuevo." });
 
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Email == dto.Email);
+        var user = await _db.Users.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return Unauthorized(new { message = "Credenciales inválidas." });
@@ -90,7 +88,7 @@ public class AuthController : ControllerBase
         var token = GenerateJwtToken(user);
         
         AttachRefreshToken(user);
-        await _context.SaveChangesAsync();
+        await _db.Users.ReplaceOneAsync(u => u.Id == user.Id, user);
 
         return Ok(new
         {
@@ -111,7 +109,7 @@ public class AuthController : ControllerBase
         if (string.IsNullOrEmpty(refreshToken))
             return Unauthorized(new { message = "Refresh token no encontrado." });
 
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+        var user = await _db.Users.Find(u => u.RefreshToken == refreshToken).FirstOrDefaultAsync();
 
         if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
             return Unauthorized(new { message = "Refresh token inválido o expirado." });
@@ -119,7 +117,7 @@ public class AuthController : ControllerBase
         // Rotar Refresh Token por seguridad
         var newJwt = GenerateJwtToken(user);
         AttachRefreshToken(user);
-        await _context.SaveChangesAsync();
+        await _db.Users.ReplaceOneAsync(u => u.Id == user.Id, user);
 
         return Ok(new
         {
@@ -139,12 +137,12 @@ public class AuthController : ControllerBase
         var refreshToken = Request.Cookies["refreshToken"];
         if (!string.IsNullOrEmpty(refreshToken))
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+            var user = await _db.Users.Find(u => u.RefreshToken == refreshToken).FirstOrDefaultAsync();
             if (user != null)
             {
                 user.RefreshToken = null;
                 user.RefreshTokenExpiryTime = null;
-                await _context.SaveChangesAsync();
+                await _db.Users.ReplaceOneAsync(u => u.Id == user.Id, user);
             }
         }
 
@@ -158,7 +156,7 @@ public class AuthController : ControllerBase
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+        var user = await _db.Users.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
 
         if (user == null)
         {
@@ -166,12 +164,12 @@ public class AuthController : ControllerBase
             return Ok(new { message = "Si el correo corresponde a una cuenta válida, se ha enviado un enlace de recuperación." });
         }
 
-        var resetToken = new Random().Next(100000, 999999).ToString();
+        var resetToken = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
 
         user.PasswordResetToken = resetToken;
         user.PasswordResetTokenExpiresAt = DateTime.UtcNow.AddMinutes(15);
 
-        await _context.SaveChangesAsync();
+        await _db.Users.ReplaceOneAsync(u => u.Id == user.Id, user);
 
         await _emailService.SendPasswordResetEmailAsync(user.Email, resetToken);
 
@@ -187,7 +185,7 @@ public class AuthController : ControllerBase
     [HttpPost("verify-code")]
     public async Task<IActionResult> VerifyCode(VerifyCodeDto dto)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+        var user = await _db.Users.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
 
         if (user == null)
             return NotFound(new { message = "Usuario no encontrado." });
@@ -213,7 +211,7 @@ public class AuthController : ControllerBase
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+        var user = await _db.Users.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
 
         if (user == null)
             return NotFound(new { message = "Usuario no encontrado." });
@@ -238,7 +236,7 @@ public class AuthController : ControllerBase
         user.PasswordResetToken = null;
         user.PasswordResetTokenExpiresAt = null;
 
-        await _context.SaveChangesAsync();
+        await _db.Users.ReplaceOneAsync(u => u.Id == user.Id, user);
 
         return Ok(new { message = "Contraseña restablecida correctamente." });
     }
@@ -283,12 +281,14 @@ public class AuthController : ControllerBase
         user.RefreshToken = refreshToken;
         user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
+        bool isProd = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development";
+
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
             Expires = user.RefreshTokenExpiryTime,
-            Secure = false, // false porque estamos en HTTP (localhost). En Prod cambiar a true.
-            SameSite = SameSiteMode.Lax // Lax permite el envío en localhost entre puertos
+            Secure = isProd, // True en prod (https) obligatorio para cross-domain cookies
+            SameSite = isProd ? SameSiteMode.None : SameSiteMode.Lax 
         };
 
         Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
