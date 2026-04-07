@@ -2,6 +2,6 @@ namespace ManchesterClothingStore.Application.DTOs;
 
 public class AddCartItemDto
 {
-    public Guid ProductId { get; set; }
+    public string ProductId { get; set; } = string.Empty;
     public int Quantity { get; set; } = 1;
 }

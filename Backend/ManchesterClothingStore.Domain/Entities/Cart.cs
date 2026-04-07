@@ -1,14 +1,15 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+
 namespace ManchesterClothingStore.Domain.Entities;
 
 public class Cart
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; } = string.Empty;
 
-    // FK
-    public Guid UserId { get; set; }
-
-    // Navegación
-    public User? User { get; set; }
+    public string UserId { get; set; } = string.Empty;
 
     public List<CartItem> Items { get; set; } = new();
 

@@ -1,19 +1,24 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+
 namespace ManchesterClothingStore.Domain.Entities;
 
 public class OrderItem
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
 
-    public Guid OrderId { get; set; }
-    public Order Order { get; set; } = null!;
+    public string ProductId { get; set; } = string.Empty;
 
-    public Guid ProductId { get; set; }
-    public Product Product { get; set; } = null!;
+    // Datos denormalizados del producto (snapshot al momento de la compra)
+    public string ProductName { get; set; } = string.Empty;
+    public string ProductImageUrl { get; set; } = string.Empty;
 
     public int Quantity { get; set; } = 1;
 
     public decimal UnitPrice { get; set; } = 0;
 
-    // No se guarda en DB: solo para mostrar subtotal por línea
+    [BsonIgnore]
     public decimal LineTotal => UnitPrice * Quantity;
 }

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 
 using System.Security.Claims;
 
@@ -17,23 +17,23 @@ namespace ManchesterClothingStore.API.Controllers;
 [Authorize]
 public class OrdersController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly MongoDbContext _db;
     private readonly IEmailService _emailService;
 
-    public OrdersController(AppDbContext context, IEmailService emailService)
+    public OrdersController(MongoDbContext db, IEmailService emailService)
     {
-        _context = context;
+        _db = db;
         _emailService = emailService;
     }
 
-    private Guid GetUserId()
+    private string GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (string.IsNullOrWhiteSpace(userIdClaim))
             throw new UnauthorizedAccessException("Token inválido.");
 
-        return Guid.Parse(userIdClaim);
+        return userIdClaim;
     }
 
     // =========================
@@ -45,19 +45,23 @@ public class OrdersController : ControllerBase
     {
         var userId = GetUserId();
 
-        var cart = await _context.Carts
-            .Include(c => c.User)
-            .Include(c => c.Items)
-            .ThenInclude(i => i.Product)
-            .FirstOrDefaultAsync(c => c.UserId == userId);
+        var cart = await _db.Carts.Find(c => c.UserId == userId).FirstOrDefaultAsync();
 
         if (cart == null || !cart.Items.Any())
             return BadRequest("El carrito está vacío.");
 
+        var productIds = cart.Items.Select(i => i.ProductId).Distinct().ToList();
+        var products = await _db.Products.Find(p => productIds.Contains(p.Id)).ToListAsync();
+        var productDict = products.ToDictionary(p => p.Id);
+
         foreach (var item in cart.Items)
         {
-            if (item.Product.Stock < item.Quantity)
-                return BadRequest($"Stock insuficiente para {item.Product.Name}");
+            var product = productDict.GetValueOrDefault(item.ProductId);
+            if (product == null)
+                return BadRequest($"Producto no encontrado.");
+
+            if (product.Stock < item.Quantity)
+                return BadRequest($"Stock insuficiente para {product.Name}");
         }
 
         var order = new Order
@@ -69,11 +73,16 @@ public class OrdersController : ControllerBase
 
         foreach (var item in cart.Items)
         {
-            item.Product.Stock -= item.Quantity;
+             var product = productDict[item.ProductId];
+             product.Stock -= item.Quantity;
+
+             await _db.Products.ReplaceOneAsync(p => p.Id == product.Id, product);
 
             order.Items.Add(new OrderItem
             {
                 ProductId = item.ProductId,
+                ProductName = product.Name,
+                ProductImageUrl = product.ImageUrl,
                 Quantity = item.Quantity,
                 UnitPrice = item.UnitPrice
             });
@@ -81,18 +90,20 @@ public class OrdersController : ControllerBase
 
         order.TotalAmount = order.Items.Sum(i => i.Quantity * i.UnitPrice);
 
-        _context.Orders.Add(order);
-        _context.CartItems.RemoveRange(cart.Items);
+        await _db.Orders.InsertOneAsync(order);
 
-        await _context.SaveChangesAsync();
+        // Limpiar el carrito
+        cart.Items.Clear();
+        await _db.Carts.ReplaceOneAsync(c => c.Id == cart.Id, cart);
 
         // Enviar email simulado
-        if (cart.User != null)
+        var user = await _db.Users.Find(u => u.Id == userId).FirstOrDefaultAsync();
+        if (user != null)
         {
             await _emailService.SendOrderConfirmationEmailAsync(
-                cart.User.Email, 
-                cart.User.FullName, 
-                order.Id.ToString(), 
+                user.Email, 
+                user.FullName, 
+                order.Id, 
                 order.TotalAmount
             );
         }
@@ -115,12 +126,9 @@ public class OrdersController : ControllerBase
     {
         var userId = GetUserId();
 
-        var orders = await _context.Orders
-            .Where(o => o.UserId == userId)
-            .Include(o => o.Items)
-            .ThenInclude(i => i.Product)
-            .OrderByDescending(o => o.CreatedAt)
-            .Select(o => new
+        var ordersList = await _db.Orders.Find(o => o.UserId == userId).SortByDescending(o => o.CreatedAt).ToListAsync();
+        
+        var orders = ordersList.Select(o => new
             {
                 o.Id,
                 Status = o.Status.ToString(),
@@ -129,14 +137,13 @@ public class OrdersController : ControllerBase
                 Items = o.Items.Select(i => new
                 {
                     i.ProductId,
-                    ProductName = i.Product.Name,
-                    ProductImageUrl = i.Product.ImageUrl,
+                    i.ProductName,
+                    i.ProductImageUrl,
                     i.Quantity,
                     i.UnitPrice,
-                    LineTotal = i.Quantity * i.UnitPrice
+                    i.LineTotal
                 })
-            })
-            .ToListAsync();
+            }).ToList();
 
         return Ok(orders);
     }
@@ -145,15 +152,12 @@ public class OrdersController : ControllerBase
     // GET: api/orders/{id}
     // Ver detalle de una orden propia
     // =========================
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetOrderById(Guid id)
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetOrderById(string id)
     {
         var userId = GetUserId();
 
-        var order = await _context.Orders
-            .Include(o => o.Items)
-            .ThenInclude(i => i.Product)
-            .FirstOrDefaultAsync(o => o.Id == id && o.UserId == userId);
+        var order = await _db.Orders.Find(o => o.Id == id && o.UserId == userId).FirstOrDefaultAsync();
 
         if (order == null)
             return NotFound("Orden no encontrada.");
@@ -167,11 +171,11 @@ public class OrdersController : ControllerBase
             Items = order.Items.Select(i => new
             {
                 i.ProductId,
-                ProductName = i.Product.Name,
-                ProductImageUrl = i.Product.ImageUrl,
+                i.ProductName,
+                i.ProductImageUrl,
                 i.Quantity,
                 i.UnitPrice,
-                LineTotal = i.Quantity * i.UnitPrice
+                i.LineTotal
             })
         });
     }
@@ -184,33 +188,36 @@ public class OrdersController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllOrders()
     {
-        var orders = await _context.Orders
-            .Include(o => o.User)
-            .Include(o => o.Items)
-            .ThenInclude(i => i.Product)
-            .OrderByDescending(o => o.CreatedAt)
-            .Select(o => new
-            {
-                o.Id,
-                o.UserId,
-                CustomerName = o.User != null ? o.User.FullName : "Sin nombre",
-                CustomerEmail = o.User != null ? o.User.Email : "Sin correo",
-                Status = o.Status.ToString(),
-                o.TotalAmount,
-                o.CreatedAt,
-                Items = o.Items.Select(i => new
-                {
-                    i.ProductId,
-                    ProductName = i.Product.Name,
-                    ProductImageUrl = i.Product.ImageUrl,
-                    i.Quantity,
-                    i.UnitPrice,
-                    LineTotal = i.Quantity * i.UnitPrice
-                })
-            })
-            .ToListAsync();
+        var ordersList = await _db.Orders.Find(_ => true).SortByDescending(o => o.CreatedAt).ToListAsync();
+        var userIds = ordersList.Select(o => o.UserId).Distinct().ToList();
+        var users = await _db.Users.Find(u => userIds.Contains(u.Id)).ToListAsync();
+        var userDict = users.ToDictionary(u => u.Id);
 
-        return Ok(orders);
+        var ordersObj = ordersList.Select(o => 
+            {
+                var user = userDict.GetValueOrDefault(o.UserId);
+                return new
+                {
+                    o.Id,
+                    o.UserId,
+                    CustomerName = user != null ? user.FullName : "Sin nombre",
+                    CustomerEmail = user != null ? user.Email : "Sin correo",
+                    Status = o.Status.ToString(),
+                    o.TotalAmount,
+                    o.CreatedAt,
+                    Items = o.Items.Select(i => new
+                    {
+                        i.ProductId,
+                        i.ProductName,
+                        i.ProductImageUrl,
+                        i.Quantity,
+                        i.UnitPrice,
+                        i.LineTotal
+                    })
+                };
+            }).ToList();
+
+        return Ok(ordersObj);
     }
 
     // =========================
@@ -218,10 +225,10 @@ public class OrdersController : ControllerBase
     // Admin/Vendedor: actualizar estado (Kanban)
     // =========================
     [Authorize(Roles = "Admin,Vendedor")]
-    [HttpPatch("{id:guid}/status")]
-    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateOrderStatusDto dto)
+    [HttpPatch("{id}/status")]
+    public async Task<IActionResult> UpdateStatus(string id, [FromBody] UpdateOrderStatusDto dto)
     {
-        var order = await _context.Orders.FindAsync(id);
+        var order = await _db.Orders.Find(o => o.Id == id).FirstOrDefaultAsync();
 
         if (order == null)
             return NotFound("Orden no encontrada.");
@@ -231,7 +238,7 @@ public class OrdersController : ControllerBase
 
         order.Status = (OrderStatus)dto.Status;
 
-        await _context.SaveChangesAsync();
+        await _db.Orders.ReplaceOneAsync(o => o.Id == id, order);
 
         return Ok(new
         {

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 
 using ManchesterClothingStore.Application.DTOs;
 using ManchesterClothingStore.Domain.Entities;
@@ -12,11 +12,11 @@ namespace ManchesterClothingStore.API.Controllers;
 [Route("api/[controller]")]
 public class ProductsController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly MongoDbContext _db;
 
-    public ProductsController(AppDbContext context)
+    public ProductsController(MongoDbContext db)
     {
-        _context = context;
+        _db = db;
     }
 
     // =========================
@@ -29,18 +29,24 @@ public class ProductsController : ControllerBase
         [FromQuery] string? search = null,
         [FromQuery] bool? active = null)
     {
-        var query = _context.Products.AsQueryable();
+        var builder = Builders<Product>.Filter;
+        var filter = builder.Empty;
 
         if (!string.IsNullOrWhiteSpace(category))
-            query = query.Where(p => p.Category == category);
+            filter &= builder.Eq(p => p.Category, category);
 
         if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(p => p.Name.Contains(search) || p.Description.Contains(search));
+        {
+            var escapedSearch = System.Text.RegularExpressions.Regex.Escape(search);
+            var searchFilter = builder.Regex(p => p.Name, new MongoDB.Bson.BsonRegularExpression(escapedSearch, "i")) |
+                               builder.Regex(p => p.Description, new MongoDB.Bson.BsonRegularExpression(escapedSearch, "i"));
+            filter &= searchFilter;
+        }
 
         if (active.HasValue)
-            query = query.Where(p => p.IsActive == active.Value);
+            filter &= builder.Eq(p => p.IsActive, active.Value);
 
-        var products = await query.ToListAsync();
+        var products = await _db.Products.Find(filter).ToListAsync();
         return Ok(products);
     }
 
@@ -48,10 +54,10 @@ public class ProductsController : ControllerBase
     // GET: api/products/{id}
     // Público
     // =========================
-    [HttpGet("{id:guid}")]
-    public async Task<ActionResult<Product>> GetById(Guid id)
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Product>> GetById(string id)
     {
-        var product = await _context.Products.FindAsync(id);
+        var product = await _db.Products.Find(p => p.Id == id).FirstOrDefaultAsync();
 
         if (product is null)
             return NotFound("Producto no encontrado.");
@@ -84,8 +90,7 @@ public class ProductsController : ControllerBase
             CreatedAt = DateTime.UtcNow
         };
 
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        await _db.Products.InsertOneAsync(product);
 
         return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
     }
@@ -95,13 +100,13 @@ public class ProductsController : ControllerBase
     // Admin o Vendedor
     // =========================
     [Authorize(Roles = "Admin,Vendedor")]
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProductDto dto)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(string id, [FromBody] UpdateProductDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var product = await _context.Products.FindAsync(id);
+        var product = await _db.Products.Find(p => p.Id == id).FirstOrDefaultAsync();
         if (product is null)
             return NotFound("Producto no encontrado.");
 
@@ -115,7 +120,8 @@ public class ProductsController : ControllerBase
         product.Colors = dto.Colors;
         product.IsActive = dto.IsActive;
 
-        await _context.SaveChangesAsync();
+        await _db.Products.ReplaceOneAsync(p => p.Id == id, product);
+        
         return NoContent();
     }
 
@@ -124,17 +130,15 @@ public class ProductsController : ControllerBase
     // Solo Admin
     // =========================
     [Authorize(Roles = "Admin")]
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(string id)
     {
-        var product = await _context.Products.FindAsync(id);
+        var product = await _db.Products.Find(p => p.Id == id).FirstOrDefaultAsync();
 
         if (product is null)
             return NotFound("Producto no encontrado.");
 
-        _context.Products.Remove(product);
-        await _context.SaveChangesAsync();
-
+        await _db.Products.DeleteOneAsync(p => p.Id == id);
         return NoContent();
     }
 
@@ -146,7 +150,7 @@ public class ProductsController : ControllerBase
     [HttpPost("seed")]
     public async Task<IActionResult> Seed()
     {
-        if (await _context.Products.AnyAsync())
+        if (await _db.Products.Find(_ => true).AnyAsync())
             return BadRequest("Ya existen productos en la base de datos.");
 
         var now = DateTime.UtcNow;
@@ -165,8 +169,7 @@ public class ProductsController : ControllerBase
             new() { Name="Short Deportivo", Description="Short liviano transpirable", Price=55000, Stock=19, Category="Deportiva", ImageUrl="https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=800&q=80", Sizes="S,M,L,XL", Colors="Negro", IsActive=true, CreatedAt=now }
         };
 
-        _context.Products.AddRange(products);
-        await _context.SaveChangesAsync();
+        await _db.Products.InsertManyAsync(products);
 
         return Ok(new { message = "Productos de demo creados.", total = products.Count });
     }

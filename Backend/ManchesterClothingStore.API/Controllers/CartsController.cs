@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 using ManchesterClothingStore.Application.DTOs;
 using ManchesterClothingStore.Domain.Entities;
 using ManchesterClothingStore.Infrastructure.Persistence;
@@ -13,31 +13,32 @@ namespace ManchesterClothingStore.API.Controllers;
 [Route("api/[controller]")]
 public class CartsController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly MongoDbContext _db;
 
-    public CartsController(AppDbContext context)
+    public CartsController(MongoDbContext db)
     {
-        _context = context;
+        _db = db;
+    }
+
+    private string GetUserId()
+    {
+        var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrWhiteSpace(idClaim))
+            throw new UnauthorizedAccessException();
+        return idClaim;
     }
 
     // GET: api/carts
     [HttpGet]
-    public async Task<ActionResult<Cart>> GetMyCart()
+    public async Task<IActionResult> GetMyCart()
     {
         var userId = GetUserId();
-        var cart = await _context.Carts
-            .Include(c => c.Items)
-            .ThenInclude(i => i.Product)
-            .FirstOrDefaultAsync(c => c.UserId == userId);
+        var cart = await _db.Carts.Find(c => c.UserId == userId).FirstOrDefaultAsync();
 
         if (cart == null)
-        {
-            cart = new Cart { UserId = userId };
-            _context.Carts.Add(cart);
-            await _context.SaveChangesAsync();
-        }
+            return Ok(new { Items = new List<object>(), Total = 0 });
 
-        return Ok(ProjectCart(cart));
+        return Ok(await ProjectCartAsync(cart));
     }
 
     // POST: api/carts/items
@@ -48,17 +49,15 @@ public class CartsController : ControllerBase
             return BadRequest("La cantidad debe ser mayor a cero.");
 
         var userId = GetUserId();
-        var cart = await _context.Carts
-            .Include(c => c.Items)
-            .FirstOrDefaultAsync(c => c.UserId == userId);
+        var cart = await _db.Carts.Find(c => c.UserId == userId).FirstOrDefaultAsync();
 
         if (cart == null)
         {
             cart = new Cart { UserId = userId };
-            _context.Carts.Add(cart);
+            await _db.Carts.InsertOneAsync(cart);
         }
 
-        var product = await _context.Products.FindAsync(dto.ProductId);
+        var product = await _db.Products.Find(p => p.Id == dto.ProductId).FirstOrDefaultAsync();
         if (product == null) return NotFound("Producto no encontrado.");
 
         if (!product.IsActive)
@@ -88,56 +87,55 @@ public class CartsController : ControllerBase
             });
         }
 
-        await _context.SaveChangesAsync();
+        await _db.Carts.ReplaceOneAsync(c => c.Id == cart.Id, cart);
 
-        // Recargar con Product para proyección
-        await _context.Entry(cart).Collection(c => c.Items).Query()
-            .Include(i => i.Product)
-            .LoadAsync();
-
-        return Ok(ProjectCart(cart));
+        return Ok(await ProjectCartAsync(cart));
     }
 
     // PUT: api/carts/items/{id}
-    [HttpPut("items/{itemId:guid}")]
-    public async Task<IActionResult> UpdateItem(Guid itemId, UpdateCartItemDto dto)
+    [HttpPut("items/{itemId}")]
+    public async Task<IActionResult> UpdateItem(string itemId, UpdateCartItemDto dto)
     {
-        var item = await _context.CartItems
-            .Include(i => i.Cart)
-            .Include(i => i.Product)
-            .FirstOrDefaultAsync(i => i.Id == itemId && i.Cart.UserId == GetUserId());
+        var userId = GetUserId();
+        var cart = await _db.Carts.Find(c => c.UserId == userId).FirstOrDefaultAsync();
 
+        if (cart == null) return NotFound("Carrito no encontrado.");
+
+        var item = cart.Items.FirstOrDefault(i => i.Id == itemId);
         if (item == null) return NotFound("Item no encontrado en tu carrito.");
 
         if (dto.Quantity <= 0)
         {
-            _context.CartItems.Remove(item);
+            cart.Items.Remove(item);
         }
         else
         {
-            if (item.Product.Stock < dto.Quantity)
+            var product = await _db.Products.Find(p => p.Id == item.ProductId).FirstOrDefaultAsync();
+            if (product == null || product.Stock < dto.Quantity)
                 return BadRequest("No hay stock suficiente.");
 
             item.Quantity = dto.Quantity;
-            item.UnitPrice = item.Product.Price;
+            item.UnitPrice = product.Price;
         }
 
-        await _context.SaveChangesAsync();
+        await _db.Carts.ReplaceOneAsync(c => c.Id == cart.Id, cart);
         return NoContent();
     }
 
     // DELETE: api/carts/items/{id}
-    [HttpDelete("items/{itemId:guid}")]
-    public async Task<IActionResult> RemoveItem(Guid itemId)
+    [HttpDelete("items/{itemId}")]
+    public async Task<IActionResult> RemoveItem(string itemId)
     {
-        var item = await _context.CartItems
-            .Include(i => i.Cart)
-            .FirstOrDefaultAsync(i => i.Id == itemId && i.Cart.UserId == GetUserId());
+        var userId = GetUserId();
+        var cart = await _db.Carts.Find(c => c.UserId == userId).FirstOrDefaultAsync();
 
+        if (cart == null) return NotFound("Carrito no encontrado.");
+
+        var item = cart.Items.FirstOrDefault(i => i.Id == itemId);
         if (item == null) return NotFound("Item no encontrado.");
 
-        _context.CartItems.Remove(item);
-        await _context.SaveChangesAsync();
+        cart.Items.Remove(item);
+        await _db.Carts.ReplaceOneAsync(c => c.Id == cart.Id, cart);
 
         return NoContent();
     }
@@ -146,46 +144,50 @@ public class CartsController : ControllerBase
     [HttpDelete]
     public async Task<IActionResult> ClearCart()
     {
-        var cart = await _context.Carts
-            .Include(c => c.Items)
-            .FirstOrDefaultAsync(c => c.UserId == GetUserId());
+        var userId = GetUserId();
+        var cart = await _db.Carts.Find(c => c.UserId == userId).FirstOrDefaultAsync();
 
         if (cart != null)
         {
-            _context.CartItems.RemoveRange(cart.Items);
-            await _context.SaveChangesAsync();
+            cart.Items.Clear();
+            await _db.Carts.ReplaceOneAsync(c => c.Id == cart.Id, cart);
         }
 
         return NoContent();
     }
 
-    private Guid GetUserId()
+    private async Task<object> ProjectCartAsync(Cart cart)
     {
-        var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return Guid.Parse(idClaim!);
-    }
+        var productIds = cart.Items.Select(i => i.ProductId).Distinct().ToList();
+        var products = await _db.Products.Find(p => productIds.Contains(p.Id)).ToListAsync();
+        var productDict = products.ToDictionary(p => p.Id);
 
-    private static object ProjectCart(Cart cart) => new
-    {
-        cart.Id,
-        cart.UserId,
-        cart.CreatedAt,
-        Items = cart.Items.Select(i => new
+        return new
         {
-            i.Id,
-            i.ProductId,
-            i.Quantity,
-            i.UnitPrice,
-            i.LineTotal,
-            Product = i.Product == null ? null : new
+            cart.Id,
+            cart.UserId,
+            cart.CreatedAt,
+            Items = cart.Items.Select(i => 
             {
-                i.Product.Id,
-                i.Product.Name,
-                i.Product.ImageUrl,
-                i.Product.Price,
-                i.Product.Stock
-            }
-        }),
-        Total = cart.Items.Sum(i => i.LineTotal)
-    };
+                var product = productDict.GetValueOrDefault(i.ProductId);
+                return new
+                {
+                    i.Id,
+                    i.ProductId,
+                    i.Quantity,
+                    i.UnitPrice,
+                    i.LineTotal,
+                    Product = product == null ? null : new
+                    {
+                        product.Id,
+                        product.Name,
+                        product.ImageUrl,
+                        product.Price,
+                        product.Stock
+                    }
+                };
+            }),
+            Total = cart.Items.Sum(i => i.LineTotal)
+        };
+    }
 }

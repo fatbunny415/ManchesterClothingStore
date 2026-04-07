@@ -1,23 +1,22 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using ManchesterClothingStore.Domain.Enums;
 
 namespace ManchesterClothingStore.Domain.Entities;
 
 public class Order
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; } = string.Empty;
 
-    // FK
-    public Guid UserId { get; set; }
+    public string UserId { get; set; } = string.Empty;
 
-    // Navegación
-    public User? User { get; set; }
-
+    [BsonRepresentation(BsonType.String)]
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
 
-    // Items de la orden
     public List<OrderItem> Items { get; set; } = new();
 
-    // Total calculado/guardado (para demo es perfecto guardarlo)
     public decimal TotalAmount { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
