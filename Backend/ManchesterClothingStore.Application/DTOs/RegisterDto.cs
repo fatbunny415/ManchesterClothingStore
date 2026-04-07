@@ -14,7 +14,7 @@ public class RegisterDto
     public string Email { get; set; } = string.Empty;
 
     [Required]
-    [StringLength(75, MinimumLength = 6, ErrorMessage = "La contraseña debe tener entre 6 y 75 caracteres.")]
+    [StringLength(75, MinimumLength = 8, ErrorMessage = "La contraseña debe tener entre 8 y 75 caracteres.")]
     public string Password { get; set; } = string.Empty;
     
     public string? RecaptchaToken { get; set; }

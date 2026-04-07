@@ -166,7 +166,7 @@ public class AuthController : ControllerBase
             return Ok(new { message = "Si el correo corresponde a una cuenta válida, se ha enviado un enlace de recuperación." });
         }
 
-        var resetToken = new Random().Next(100000, 999999).ToString();
+        var resetToken = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
 
         user.PasswordResetToken = resetToken;
         user.PasswordResetTokenExpiresAt = DateTime.UtcNow.AddMinutes(15);

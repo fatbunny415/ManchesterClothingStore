@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
 using ManchesterClothingStore.Infrastructure.Persistence;
@@ -27,8 +28,13 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Controllers
-builder.Services.AddControllers();
+// Controllers con serialización JSON segura (evita ciclos infinitos)
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
 
 // Swagger + JWT (Authorize en Swagger)
 builder.Services.AddEndpointsApiExplorer();
@@ -89,8 +95,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// Servicio de reCAPTCHA v3
-builder.Services.AddSingleton<RecaptchaService>();
+// HttpClientFactory para evitar socket exhaustion
+builder.Services.AddHttpClient<RecaptchaService>();
 
 // Rate Limiting — 5 intentos por IP cada 15 minutos en login
 builder.Services.AddRateLimiter(options =>

@@ -22,5 +22,9 @@ public class UpdateProductDto
     [Required]
     public string ImageUrl { get; set; } = string.Empty;
 
+    public string Sizes { get; set; } = string.Empty;
+
+    public string Colors { get; set; } = string.Empty;
+
     public bool IsActive { get; set; } = true;
 }

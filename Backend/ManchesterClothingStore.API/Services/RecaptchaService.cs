@@ -7,9 +7,9 @@ public class RecaptchaService
     private readonly HttpClient _httpClient;
     private readonly string _secretKey;
 
-    public RecaptchaService(IConfiguration configuration)
+    public RecaptchaService(HttpClient httpClient, IConfiguration configuration)
     {
-        _httpClient = new HttpClient();
+        _httpClient = httpClient;
         _secretKey = configuration["Recaptcha:SecretKey"] 
             ?? throw new InvalidOperationException("Recaptcha:SecretKey is not configured.");
     }

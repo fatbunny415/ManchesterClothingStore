@@ -37,7 +37,7 @@ public class CartsController : ControllerBase
             await _context.SaveChangesAsync();
         }
 
-        return Ok(cart);
+        return Ok(ProjectCart(cart));
     }
 
     // POST: api/carts/items
@@ -89,7 +89,13 @@ public class CartsController : ControllerBase
         }
 
         await _context.SaveChangesAsync();
-        return Ok(cart);
+
+        // Recargar con Product para proyección
+        await _context.Entry(cart).Collection(c => c.Items).Query()
+            .Include(i => i.Product)
+            .LoadAsync();
+
+        return Ok(ProjectCart(cart));
     }
 
     // PUT: api/carts/items/{id}
@@ -158,4 +164,28 @@ public class CartsController : ControllerBase
         var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         return Guid.Parse(idClaim!);
     }
+
+    private static object ProjectCart(Cart cart) => new
+    {
+        cart.Id,
+        cart.UserId,
+        cart.CreatedAt,
+        Items = cart.Items.Select(i => new
+        {
+            i.Id,
+            i.ProductId,
+            i.Quantity,
+            i.UnitPrice,
+            i.LineTotal,
+            Product = i.Product == null ? null : new
+            {
+                i.Product.Id,
+                i.Product.Name,
+                i.Product.ImageUrl,
+                i.Product.Price,
+                i.Product.Stock
+            }
+        }),
+        Total = cart.Items.Sum(i => i.LineTotal)
+    };
 }

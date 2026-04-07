@@ -78,6 +78,8 @@ public class ProductsController : ControllerBase
             Stock = dto.Stock,
             Category = dto.Category,
             ImageUrl = dto.ImageUrl,
+            Sizes = dto.Sizes,
+            Colors = dto.Colors,
             IsActive = dto.IsActive,
             CreatedAt = DateTime.UtcNow
         };
@@ -109,6 +111,8 @@ public class ProductsController : ControllerBase
         product.Stock = dto.Stock;
         product.Category = dto.Category;
         product.ImageUrl = dto.ImageUrl;
+        product.Sizes = dto.Sizes;
+        product.Colors = dto.Colors;
         product.IsActive = dto.IsActive;
 
         await _context.SaveChangesAsync();
