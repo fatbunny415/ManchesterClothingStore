@@ -281,12 +281,14 @@ public class AuthController : ControllerBase
         user.RefreshToken = refreshToken;
         user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
+        bool isProd = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development";
+
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
             Expires = user.RefreshTokenExpiryTime,
-            Secure = false, // false porque estamos en HTTP (localhost). En Prod cambiar a true.
-            SameSite = SameSiteMode.Lax // Lax permite el envío en localhost entre puertos
+            Secure = isProd, // True en prod (https) obligatorio para cross-domain cookies
+            SameSite = isProd ? SameSiteMode.None : SameSiteMode.Lax 
         };
 
         Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
