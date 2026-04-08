@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import ProductDetail from './pages/ProductDetail';
 import Orders from './pages/Orders';
 import OrderConfirmation from './pages/OrderConfirmation';
+import PaymentSimulator from './pages/PaymentSimulator';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import PlaceholderPage from './pages/PlaceholderPage';
@@ -129,6 +130,14 @@ function App() {
               }
             />
             <Route
+              path="/payment-simulator/:orderId"
+              element={
+                <ProtectedRoute>
+                  <PaymentSimulator />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/order-confirmation/:id"
               element={
                 <ProtectedRoute>
@@ -172,6 +181,14 @@ function App() {
                     <Route path="/forgot" element={<ForgotPassword />} />
                     <Route path="/terms" element={<Terms />} />
                     <Route path="/product/:id" element={<ProductDetail />} />
+                    <Route
+                      path="/payment-simulator/:orderId"
+                      element={
+                        <ProtectedRoute>
+                          <PaymentSimulator />
+                        </ProtectedRoute>
+                      }
+                    />
                     <Route
                       path="/orders"
                       element={

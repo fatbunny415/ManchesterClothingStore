@@ -17,8 +17,6 @@ const Shop = () => {
 
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
-  const [selectedSize, setSelectedSize] = useState<string>('');
-  const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedType, setSelectedType] = useState<string>('');
   const [minPrice, setMinPrice] = useState<number>(0);
   const [maxPrice, setMaxPrice] = useState<number>(500000); // alto por defecto para que muestre todo
@@ -28,9 +26,7 @@ const Shop = () => {
   // Collapsible sections state
   const [openSections, setOpenSections] = useState({
     categoria: true,
-    talla: true,
     precio: true,
-    color: true,
     tipo: true
   });
 
@@ -47,15 +43,6 @@ const Shop = () => {
 
   // Filter options
   const categories = ['Todos', 'Superior', 'Inferior', 'Accesorios'];
-  const sizes = ['XS', 'S', 'M', 'L', 'XL'];
-  const colors = [
-    { name: 'Negro', class: 'bg-manchester-black border-white/20' },
-    { name: 'Blanco', class: 'bg-manchester-white border-white/20' },
-    { name: 'Gris', class: 'bg-gray-500 border-transparent' },
-    { name: 'Azul', class: 'bg-manchester-blue border-transparent' },
-    { name: 'Beige', class: 'bg-[#D4C3A3] border-transparent' },
-    { name: 'Dorado', class: 'bg-manchester-gold border-transparent' }
-  ];
   
   // Dynamic garments based on current view
   const garmentTypes = isMainCategory 
@@ -104,14 +91,6 @@ const Shop = () => {
         filteredData = filteredData.filter((p: Product) => 
           p.price >= minPrice && p.price <= maxPrice
         );
-
-        // 4. Filter by Size & Color (using our deterministic mock)
-        if (selectedSize) {
-          filteredData = filteredData.filter((p: Product) => p.sizes?.includes(selectedSize));
-        }
-        if (selectedColor) {
-          filteredData = filteredData.filter((p: Product) => p.colors?.includes(selectedColor));
-        }
         
         setProducts(filteredData);
       } catch (error) {
@@ -126,7 +105,7 @@ const Shop = () => {
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [selectedCategory, selectedType, searchTerm, minPrice, maxPrice, selectedSize, selectedColor]);
+  }, [selectedCategory, selectedType, searchTerm, minPrice, maxPrice]);
 
   const toggleSection = (section: keyof typeof openSections) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
@@ -135,8 +114,6 @@ const Shop = () => {
   const clearFilters = () => {
     setSearchTerm('');
     if (!isMainCategory) setSelectedCategory('Todos');
-    setSelectedSize('');
-    setSelectedColor('');
     setSelectedType('');
     setMinPrice(0);
     setMaxPrice(500000);
@@ -219,76 +196,6 @@ const Shop = () => {
                     {type}
                   </span>
                 </label>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Talla Filter */}
-      <div className="border-b border-white/5 pb-6">
-        <button 
-          onClick={() => toggleSection('talla')}
-          className="flex justify-between items-center w-full text-left font-serif text-lg font-semibold text-manchester-white mb-4"
-        >
-          Talla 
-          {openSections.talla ? <ChevronUp className="w-4 h-4 text-white/50" /> : <ChevronDown className="w-4 h-4 text-white/50" />}
-        </button>
-        <AnimatePresence>
-          {openSections.talla && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden flex flex-wrap gap-2"
-            >
-              {sizes.map(size => (
-                <button
-                  key={size}
-                  onClick={() => setSelectedSize(selectedSize === size ? '' : size)}
-                  className={`w-10 h-10 flex items-center justify-center text-xs font-sans border transition-all ${
-                    selectedSize === size 
-                    ? 'border-manchester-gold bg-manchester-gold/10 text-manchester-gold font-bold' 
-                    : 'border-white/10 text-white/50 hover:border-white/30 hover:text-white'
-                  }`}
-                >
-                  {size}
-                </button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Color Filter */}
-      <div className="border-b border-white/5 pb-6">
-        <button 
-          onClick={() => toggleSection('color')}
-          className="flex justify-between items-center w-full text-left font-serif text-lg font-semibold text-manchester-white mb-4"
-        >
-          Color 
-          {openSections.color ? <ChevronUp className="w-4 h-4 text-white/50" /> : <ChevronDown className="w-4 h-4 text-white/50" />}
-        </button>
-        <AnimatePresence>
-          {openSections.color && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden flex flex-wrap gap-3"
-            >
-              {colors.map(color => (
-                <button
-                  key={color.name}
-                  onClick={() => setSelectedColor(selectedColor === color.name ? '' : color.name)}
-                  title={color.name}
-                  aria-label={`Filtrar por color ${color.name}`}
-                  className={`relative w-8 h-8 rounded-full border flex items-center justify-center transition-all ${color.class} ${
-                    selectedColor === color.name ? 'ring-2 ring-manchester-gold ring-offset-2 ring-offset-manchester-black' : 'hover:scale-110'
-                  }`}
-                >
-                  {selectedColor === color.name && <Check className="w-4 h-4 mix-blend-difference text-white" />}
-                </button>
               ))}
             </motion.div>
           )}

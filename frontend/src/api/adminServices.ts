@@ -43,9 +43,9 @@ export const adminProductService = {
     await api.delete(`/products/${id}`);
   },
 
-  async seed(): Promise<{ message: string; total: number }> {
-    const { data } = await api.post<{ message: string; total: number }>(
-      '/products/seed'
+  async seed(force: boolean = false): Promise<{ message: string; total: number; force?: boolean }> {
+    const { data } = await api.post<{ message: string; total: number; force?: boolean }>(
+      `/products/seed${force ? '?force=true' : ''}`
     );
     return data;
   },

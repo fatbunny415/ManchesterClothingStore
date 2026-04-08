@@ -31,7 +31,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
       const response = await orderService.createOrder();
       await clearCart();
       onClose();
-      toast.success('PEDIDO PROCESADO EXITOSAMENTE', { 
+      toast.success('PEDIDO CREADO - PROCEDE A PAGAR', { 
         icon: '✨',
         style: {
           background: '#D4AF37',
@@ -40,7 +40,8 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
           letterSpacing: '0.1em'
         }
       });
-      navigate(`/order-confirmation/${response.orderId}`);
+      // Redirigir al simulador de pago en lugar de a confirmación directa
+      navigate(`/payment-simulator/${response.orderId}`);
     } catch (error) {
       console.error('Error during checkout:', error);
       toast.error('Error al procesar el pedido. Por favor intenta de nuevo.');

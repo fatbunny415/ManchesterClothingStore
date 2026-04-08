@@ -148,10 +148,13 @@ public class ProductsController : ControllerBase
     // =========================
     [Authorize(Roles = "Admin")]
     [HttpPost("seed")]
-    public async Task<IActionResult> Seed()
+    public async Task<IActionResult> Seed([FromQuery] bool force = false)
     {
-        if (await _db.Products.Find(_ => true).AnyAsync())
-            return BadRequest("Ya existen productos en la base de datos.");
+        if (!force && await _db.Products.Find(_ => true).AnyAsync())
+            return BadRequest("Ya existen productos en la base de datos. Usa ?force=true para reiniciar.");
+
+        if (force)
+            await _db.Products.DeleteManyAsync(_ => true);
 
         var now = DateTime.UtcNow;
 
@@ -171,6 +174,6 @@ public class ProductsController : ControllerBase
 
         await _db.Products.InsertManyAsync(products);
 
-        return Ok(new { message = "Productos de demo creados.", total = products.Count });
+        return Ok(new { message = "Productos de demo creados.", total = products.Count, force = force });
     }
 }

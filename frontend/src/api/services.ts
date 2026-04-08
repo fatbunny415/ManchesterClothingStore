@@ -96,6 +96,13 @@ export const orderService = {
   async createOrder() {
     const { data } = await api.post('/orders/checkout');
     return data;
+  },
+
+  async confirmPayment(orderId: string, paymentMethod?: string) {
+    const { data } = await api.post(`/orders/${orderId}/confirm-payment`, {
+      paymentMethod: paymentMethod || 'SimulatedPayment'
+    });
+    return data;
   }
 };
 

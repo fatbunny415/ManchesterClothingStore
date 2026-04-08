@@ -5,7 +5,7 @@ const Footer = () => {
   return (
     <footer className="bg-manchester-dark border-t border-white/5 pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-16">
           {/* Brand */}
           <div className="space-y-6">
             <Link to="/" className="text-2xl font-bold tracking-tighter text-manchester-white">
@@ -61,6 +61,21 @@ const Footer = () => {
                 <span className="text-white/50 text-sm">support@manchester.store</span>
               </li>
             </ul>
+          </div>
+
+          {/* Colaboradores */}
+          <div>
+            <h4 className="text-sm font-bold tracking-widest text-manchester-gold mb-6">DESARROLLO</h4>
+            <div className="space-y-4">
+              <div>
+                <p className="text-white/80 text-sm font-medium">Simon Alzate Velasquez</p>
+                <p className="text-white/50 text-xs">+57 324 5091274</p>
+              </div>
+              <div>
+                <p className="text-white/80 text-sm font-medium">Daniel Alejandro Cardona Rico</p>
+                <p className="text-white/50 text-xs">+57 300 7973265</p>
+              </div>
+            </div>
           </div>
         </div>
 

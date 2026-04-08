@@ -14,7 +14,6 @@ namespace ManchesterClothingStore.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class OrdersController : ControllerBase
 {
     private readonly MongoDbContext _db;
@@ -40,6 +39,7 @@ public class OrdersController : ControllerBase
     // POST: api/orders/checkout
     // Crear orden desde carrito
     // =========================
+    [Authorize]
     [HttpPost("checkout")]
     public async Task<IActionResult> Checkout()
     {
@@ -121,6 +121,7 @@ public class OrdersController : ControllerBase
     // GET: api/orders/my-orders
     // Ver mis pedidos
     // =========================
+    [Authorize]
     [HttpGet("my-orders")]
     public async Task<IActionResult> GetMyOrders()
     {
@@ -152,6 +153,7 @@ public class OrdersController : ControllerBase
     // GET: api/orders/{id}
     // Ver detalle de una orden propia
     // =========================
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetOrderById(string id)
     {
@@ -247,4 +249,53 @@ public class OrdersController : ControllerBase
             status = order.Status.ToString()
         });
     }
+
+    // =========================
+    // POST: api/orders/{id}/confirm-payment
+    // Cliente: Simular confirmación de pago
+    // =========================
+    [Authorize]
+    [HttpPost("{id}/confirm-payment")]
+    public async Task<IActionResult> ConfirmPayment(string id, [FromBody] ConfirmPaymentDto dto)
+    {
+        var userId = GetUserId();
+
+        var order = await _db.Orders.Find(o => o.Id == id && o.UserId == userId).FirstOrDefaultAsync();
+
+        if (order == null)
+            return NotFound("Orden no encontrada.");
+
+        if (order.Status != OrderStatus.Pending)
+            return BadRequest("Solo se pueden confirmar órdenes en estado Pending.");
+
+        // Simular confirmación de pago exitosa
+        order.Status = OrderStatus.Paid;
+
+        await _db.Orders.ReplaceOneAsync(o => o.Id == id, order);
+
+        // Enviar email de confirmación de pago simulado
+        var user = await _db.Users.Find(u => u.Id == userId).FirstOrDefaultAsync();
+        if (user != null)
+        {
+            await _emailService.SendOrderConfirmationEmailAsync(
+                user.Email,
+                user.FullName,
+                order.Id,
+                order.TotalAmount
+            );
+        }
+
+        return Ok(new
+        {
+            message = "Pago confirmado exitosamente.",
+            orderId = order.Id,
+            status = order.Status.ToString(),
+            totalAmount = order.TotalAmount
+        });
+    }
+}
+
+public class ConfirmPaymentDto
+{
+    public string? PaymentMethod { get; set; }
 }
