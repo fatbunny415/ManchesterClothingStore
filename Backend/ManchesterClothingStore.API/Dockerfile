@@ -11,7 +11,7 @@ COPY . .
 RUN dotnet restore
 
 # Publicar aplicación
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet publish ./ManchesterClothingStore.API/ManchesterClothingStore.API.csproj
 
 # -----------------------
 # ETAPA 2: RUNTIME
