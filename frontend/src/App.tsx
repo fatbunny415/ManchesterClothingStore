@@ -17,6 +17,7 @@ import { useCartStore } from './store/useCartStore';
 import { useAuthStore } from './store/useAuthStore';
 import { Toaster } from 'react-hot-toast';
 import ProtectedRoute from './components/ProtectedRoute';
+import Terms from './pages/Terms';
 
 // Admin imports
 import AdminRoute from './components/admin/AdminRoute';
@@ -34,6 +35,7 @@ import SellerDashboard from './pages/seller/SellerDashboard';
 import SellerOrders from './pages/seller/SellerOrders';
 import SellerPlaceholder from './pages/seller/SellerPlaceholder';
 import SellerSales from './pages/seller/SellerSales';
+
 
 
 function App() {
@@ -104,6 +106,7 @@ function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/forgot" element={<ForgotPassword />} />
+                    <Route path="/terms" element={<Terms />} />
                     <Route path="/product/:id" element={<ProductDetail />} />
                     <Route
                       path="/orders"
