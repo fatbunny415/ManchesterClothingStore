@@ -39,7 +39,7 @@ const Home = () => {
 
         {/* Hero Image con zoom lento */}
         <img
-          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop"
+          src="/images/hero-tienda.jpg"
           alt="Manchester Hero"
           loading="lazy"
           className="hero-img absolute inset-0 w-full h-full object-cover"
@@ -60,15 +60,15 @@ const Home = () => {
             <span className="w-8 h-[1px] bg-manchester-gold/60 inline-block" />
           </motion.span>
 
-          {/* Título serif premium */}
+          {/* Título Streetwear Bold */}
           <motion.h1
             initial={{ opacity: 0, y: 36 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.2, ease: "easeOut" }}
-            className="font-serif text-6xl md:text-9xl font-bold leading-[1.1] mb-8 text-manchester-white pr-4"
+            className="font-mono text-5xl md:text-8xl font-black leading-[0.95] mb-8 text-manchester-white pr-4 tracking-[-4px] uppercase"
           >
             Esencia<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-manchester-white via-manchester-gold to-manchester-white italic pb-2 inline-block pr-6">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-manchester-white via-manchester-gold to-manchester-white pb-2 inline-block pr-6 tracking-[-2px]">
               Manchester
             </span>
           </motion.h1>
@@ -137,9 +137,9 @@ const Home = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { title: 'Superior',   img: 'https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?q=80&w=2066&auto=format&fit=crop', link: '/superior' },
-              { title: 'Inferior',   img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop', link: '/inferior' },
-              { title: 'Accesorios', img: 'https://images.unsplash.com/photo-1611082500052-7e77d9c6e3b0?q=80&w=1974&auto=format&fit=crop', link: '/accesorios' }
+              { title: 'Superior',   img: '/images/card-superior.jpg', link: '/superior' },
+              { title: 'Inferior',   img: '/images/card-inferior.jpg', link: '/inferior' },
+              { title: 'Accesorios', img: '/images/card-accesorios.jpg', link: '/accesorios' }
             ].map((cat, i) => (
               <motion.div
                 key={i}

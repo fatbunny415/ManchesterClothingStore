@@ -1,6 +1,7 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import PublicLayout from './components/PublicLayout';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
 import Login from './pages/Login';
@@ -44,9 +45,26 @@ function App() {
     fetchCart();
   }, [isAuthenticated, fetchCart]);
 
-  // Sync scroll to top on route change (optional but good for UX)
+  // Cargar reCAPTCHA v3 dinámicamente
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+    if (!siteKey) {
+      console.warn('VITE_RECAPTCHA_SITE_KEY no está configurada');
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+
+    return () => {
+      // Limpiar script si es necesario
+      if (script.parentNode === document.head) {
+        document.head.removeChild(script);
+      }
+    };
   }, []);
 
   return (
@@ -88,61 +106,50 @@ function App() {
           {/* ========================= */}
           {/* Public Routes (with Navbar/Footer) */}
           {/* ========================= */}
-          <Route
-            path="*"
-            element={
-              <>
-                <Navbar />
-                <main className="flex-grow">
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/shop" element={<Shop />} />
-                    <Route path="/superior" element={<Shop />} />
-                    <Route path="/inferior" element={<Shop />} />
-                    <Route path="/calzado" element={<Shop />} />
-                    <Route path="/accesorios" element={<Shop />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/forgot" element={<ForgotPassword />} />
-                    <Route path="/product/:id" element={<ProductDetail />} />
-                    <Route
-                      path="/orders"
-                      element={
-                        <ProtectedRoute>
-                          <Orders />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/order-confirmation/:id"
-                      element={
-                        <ProtectedRoute>
-                          <OrderConfirmation />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/profile"
-                      element={
-                        <ProtectedRoute>
-                          <Profile />
-                        </ProtectedRoute>
-                      }
-                    />
-                    {/* Placeholder pages from Footer */}
-                    <Route path="/soporte" element={<PlaceholderPage />} />
-                    <Route path="/envios" element={<PlaceholderPage />} />
-                    <Route path="/tallas" element={<PlaceholderPage />} />
-                    <Route path="/contacto" element={<PlaceholderPage />} />
-                    
-                    {/* 404 Not Found Catch-All Route */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </main>
-                <Footer />
-              </>
-            }
-          />
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/superior" element={<Shop />} />
+            <Route path="/inferior" element={<Shop />} />
+            <Route path="/calzado" element={<Shop />} />
+            <Route path="/accesorios" element={<Shop />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot" element={<ForgotPassword />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route
+              path="/orders"
+              element={
+                <ProtectedRoute>
+                  <Orders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/order-confirmation/:id"
+              element={
+                <ProtectedRoute>
+                  <OrderConfirmation />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            {/* Placeholder pages from Footer */}
+            <Route path="/soporte" element={<PlaceholderPage />} />
+            <Route path="/envios" element={<PlaceholderPage />} />
+            <Route path="/tallas" element={<PlaceholderPage />} />
+            <Route path="/contacto" element={<PlaceholderPage />} />
+            
+            {/* 404 Not Found Catch-All Route */}
+            <Route path="*" element={<NotFound />} />
+          </Route>
         </Routes>
       </div>
     </Router>

@@ -33,20 +33,21 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // Hacemos el llamado a refresh-token silenciosamente
-        const res = await axios.post(
-          `${api.defaults.baseURL}/auth/refresh-token`,
+        // Hacemos el llamado a refresh-token silenciosamente usando la instancia api con withCredentials
+        const res = await api.post(
+          '/auth/refresh-token',
           {},
           { withCredentials: true }
         );
 
         // Si fue exitoso, actualizamos el store central con el nuevo JWT
+        const currentUser = useAuthStore.getState().user;
         useAuthStore.getState().setAuth(
           {
-            id: useAuthStore.getState().user?.id || 'N/A', // O leemos del res.data directo
-            email: res.data.email,    
-            fullName: res.data.fullName,
-            role: res.data.role
+            id: res.data.userId || currentUser?.id || 'N/A',
+            email: res.data.email || currentUser?.email || 'N/A',
+            fullName: res.data.fullName || currentUser?.fullName || 'Usuario',
+            role: res.data.role || currentUser?.role || 'Cliente'
           },
           res.data.token
         );

@@ -93,6 +93,7 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             token,
+            userId = user.Id,
             role = user.Role.ToString(),
             email = user.Email,
             fullName = user.FullName
@@ -122,6 +123,7 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             token = newJwt,
+            userId = user.Id,
             role = user.Role.ToString(),
             email = user.Email,
             fullName = user.FullName

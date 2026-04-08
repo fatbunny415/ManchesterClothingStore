@@ -101,6 +101,9 @@ builder.Services.AddAuthorization();
 // HttpClientFactory para evitar socket exhaustion
 builder.Services.AddHttpClient<RecaptchaService>();
 
+// PayU
+builder.Services.AddScoped<PayUService>();
+
 // Rate Limiting — 5 intentos por IP cada 15 minutos en login
 builder.Services.AddRateLimiter(options =>
 {
