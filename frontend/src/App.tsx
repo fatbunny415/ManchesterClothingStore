@@ -18,6 +18,7 @@ import { useCartStore } from './store/useCartStore';
 import { useAuthStore } from './store/useAuthStore';
 import { Toaster } from 'react-hot-toast';
 import ProtectedRoute from './components/ProtectedRoute';
+import Terms from './pages/Terms';
 
 // Admin imports
 import AdminRoute from './components/admin/AdminRoute';
@@ -35,6 +36,7 @@ import SellerDashboard from './pages/seller/SellerDashboard';
 import SellerOrders from './pages/seller/SellerOrders';
 import SellerPlaceholder from './pages/seller/SellerPlaceholder';
 import SellerSales from './pages/seller/SellerSales';
+
 
 
 function App() {
@@ -106,6 +108,7 @@ function App() {
           {/* ========================= */}
           {/* Public Routes (with Navbar/Footer) */}
           {/* ========================= */}
+<<<<<<< HEAD
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/shop" element={<Shop />} />
@@ -150,6 +153,64 @@ function App() {
             {/* 404 Not Found Catch-All Route */}
             <Route path="*" element={<NotFound />} />
           </Route>
+=======
+          <Route
+            path="*"
+            element={
+              <>
+                <Navbar />
+                <main className="flex-grow">
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/shop" element={<Shop />} />
+                    <Route path="/superior" element={<Shop />} />
+                    <Route path="/inferior" element={<Shop />} />
+                    <Route path="/calzado" element={<Shop />} />
+                    <Route path="/accesorios" element={<Shop />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/forgot" element={<ForgotPassword />} />
+                    <Route path="/terms" element={<Terms />} />
+                    <Route path="/product/:id" element={<ProductDetail />} />
+                    <Route
+                      path="/orders"
+                      element={
+                        <ProtectedRoute>
+                          <Orders />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/order-confirmation/:id"
+                      element={
+                        <ProtectedRoute>
+                          <OrderConfirmation />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/profile"
+                      element={
+                        <ProtectedRoute>
+                          <Profile />
+                        </ProtectedRoute>
+                      }
+                    />
+                    {/* Placeholder pages from Footer */}
+                    <Route path="/soporte" element={<PlaceholderPage />} />
+                    <Route path="/envios" element={<PlaceholderPage />} />
+                    <Route path="/tallas" element={<PlaceholderPage />} />
+                    <Route path="/contacto" element={<PlaceholderPage />} />
+                    
+                    {/* 404 Not Found Catch-All Route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
+                <Footer />
+              </>
+            }
+          />
+>>>>>>> a6b7c8666e0fbfd03a4a261c4755ce9fd4c9da93
         </Routes>
       </div>
     </Router>
