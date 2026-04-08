@@ -18,9 +18,13 @@ FROM build AS publish
 RUN dotnet publish "ManchesterClothingStore.API.csproj" -c Release -o /app/publish
 
 # Imagen limpia de solo ejecución (sin SDK, minimiza tamaño y riesgos)
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-jammy AS runtime
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+# Previene el error Status 139 (SegFault) en la capa Free de Render (512mb RAM)
+ENV DOTNET_gcServer=0
+ENV DOTNET_EnableDiagnostics=0
 
 # Configurar puertos para Render (Render busca el puerto 8080 u otros dinámicos)
 ENV ASPNETCORE_URLS=http://+:8080
