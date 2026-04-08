@@ -283,7 +283,7 @@ const AdminProducts: React.FC = () => {
             />
 
             <AdminFormField 
-              label="URL de Imagen (Opcional)" 
+              label="URL de Imagen " 
               value={formData.imageUrl} 
               onChange={e => setFormData({...formData, imageUrl: e.target.value})} 
               placeholder="https://..."

@@ -108,7 +108,7 @@ function App() {
           {/* ========================= */}
           {/* Public Routes (with Navbar/Footer) */}
           {/* ========================= */}
-<<<<<<< HEAD
+           
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/shop" element={<Shop />} />
@@ -153,7 +153,7 @@ function App() {
             {/* 404 Not Found Catch-All Route */}
             <Route path="*" element={<NotFound />} />
           </Route>
-=======
+
           <Route
             path="*"
             element={
@@ -210,7 +210,7 @@ function App() {
               </>
             }
           />
->>>>>>> a6b7c8666e0fbfd03a4a261c4755ce9fd4c9da93
+
         </Routes>
       </div>
     </Router>
